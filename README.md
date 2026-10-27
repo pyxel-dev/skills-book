@@ -1,4 +1,4 @@
-# Skills Manager
+# Skills Book
 
 App Electron (macOS / Windows) qui liste les `SKILL.md` de la machine et les édite en Markdown.
 

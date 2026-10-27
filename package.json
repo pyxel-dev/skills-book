@@ -1,6 +1,6 @@
 {
-  "name": "skills-manager",
-  "productName": "Skills Manager",
+  "name": "skills-book",
+  "productName": "Skills Book",
   "version": "0.1.0",
   "description": "Liste et édite les skills (SKILL.md) présentes sur la machine",
   "main": "src/main.js",
@@ -15,8 +15,8 @@
     "dist:win": "electron-builder --win"
   },
   "build": {
-    "appId": "dev.local.skills-manager",
-    "productName": "Skills Manager",
+    "appId": "dev.pyxel.skills-book",
+    "productName": "Skills Book",
     "files": [
       "src/**/*",
       "package.json"
