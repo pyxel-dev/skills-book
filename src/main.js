@@ -164,9 +164,10 @@ function createWindow() {
     minHeight: 520,
     title: 'Skills Book',
     show: false,
-    backgroundColor: isMac ? '#00000000' : nativeTheme.shouldUseDarkColors ? '#1e1e1e' : '#ffffff',
+    // Fond opaque : la vibrancy macOS reprenait la teinte des fenêtres derrière et donnait une sidebar grisée.
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#1c1c1e' : '#ffffff',
     ...(isMac
-      ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 16, y: 16 }, vibrancy: 'sidebar', visualEffectState: 'active' }
+      ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 16, y: 16 } }
       : { autoHideMenuBar: true }),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
