@@ -19,10 +19,17 @@ const registry = new Map();
 /* ---------- Config ---------- */
 
 const configFile = () => path.join(app.getPath('userData'), 'config.json');
+/** Config de l'ancien nom de l'app (« Skills Manager »), reprise au premier lancement. */
+const legacyConfigFile = () => path.join(app.getPath('appData'), 'Skills Manager', 'config.json');
+
+const readJsonFile = async (file) => {
+  try { return JSON.parse(await fs.readFile(file, 'utf8')); } catch { return null; }
+};
 
 async function loadConfig() {
-  let raw = null;
-  try { raw = JSON.parse(await fs.readFile(configFile(), 'utf8')); } catch {}
+  let raw = await readJsonFile(configFile());
+  const migrated = !raw && (raw = await readJsonFile(legacyConfigFile())) !== null;
+
   config.lang = I18n.normalize(raw?.lang);
   if (!raw || !Array.isArray(raw.roots)) {
     config.roots = defaultRoots(home);
@@ -32,8 +39,8 @@ async function loadConfig() {
   // v1 → v2 : ajout des nouveaux dossiers par défaut (ex. ~/.claude/agents)
   if ((raw.version || 1) < CONFIG_VERSION) {
     for (const r of defaultRoots(home)) if (!config.roots.includes(r)) config.roots.push(r);
-    await saveConfig();
   }
+  if (migrated || (raw.version || 1) < CONFIG_VERSION) await saveConfig();
 }
 
 async function saveConfig() {
@@ -155,7 +162,7 @@ function createWindow() {
     height: 820,
     minWidth: 820,
     minHeight: 520,
-    title: 'Skills Manager',
+    title: 'Skills Book',
     show: false,
     backgroundColor: isMac ? '#00000000' : nativeTheme.shouldUseDarkColors ? '#1e1e1e' : '#ffffff',
     ...(isMac
