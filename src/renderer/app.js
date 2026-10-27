@@ -414,6 +414,10 @@
     renderList();
   });
 
+  // Séparateur sous l'en-tête fixe dès que la liste a défilé.
+  const sidebarTop = document.querySelector('.sidebar-top');
+  els.list.addEventListener('scroll', () => sidebarTop.classList.toggle('scrolled', els.list.scrollTop > 0), { passive: true });
+
   els.filter.addEventListener('input', () => { state.filter = els.filter.value; renderList(); });
   els.filter.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown') { e.preventDefault(); els.list.querySelector('.item-main')?.focus(); }
