@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:">
+  <title>Skills Manager</title>
+  <link rel="stylesheet" href="../../node_modules/easymde/dist/easymde.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-top drag">
+        <div class="tabs no-drag" id="tabs" role="tablist">
+          <button class="tab" role="tab" data-kind="skill"><span data-i18n="tab.skill"></span><span class="tab-n" id="n-skill"></span></button>
+          <button class="tab" role="tab" data-kind="agent"><span data-i18n="tab.agent"></span><span class="tab-n" id="n-agent"></span></button>
+        </div>
+        <label class="search no-drag">
+          <span class="search-icon" data-icon="search"></span>
+          <input id="filter" type="search" data-i18n-placeholder="filter.placeholder" spellcheck="false" autocomplete="off">
+        </label>
+        <div class="scopes no-drag" id="scopes">
+          <button class="chip" data-scope="all" data-i18n="scope.all"></button>
+          <button class="chip" data-scope="global" data-i18n="scope.global"></button>
+          <button class="chip" data-scope="local" data-i18n="scope.local"></button>
+          <button class="chip" data-scope="other" data-i18n="scope.other" hidden></button>
+        </div>
+      </div>
+
+      <nav class="list" id="list" aria-label="Skills"></nav>
+
+      <section class="roots" id="roots" hidden>
+        <header class="roots-head">
+          <strong data-i18n="roots.title"></strong>
+          <button class="icon-btn" id="btn-roots-close" data-i18n-title="action.close" data-icon="x"></button>
+        </header>
+        <ul class="roots-list" id="roots-list"></ul>
+        <div class="roots-actions">
+          <button class="btn" id="btn-add-root"><span data-icon="plus"></span><span data-i18n="roots.add"></span></button>
+          <button class="btn ghost" id="btn-reset-roots" data-i18n="roots.reset"></button>
+        </div>
+      </section>
+
+      <footer class="sidebar-foot">
+        <span class="count" id="count"></span>
+        <label class="lang" data-i18n-title="lang.label">
+          <span data-icon="globe" data-size="14"></span>
+          <select id="lang"></select>
+        </label>
+        <button class="icon-btn" id="btn-roots" data-i18n-title="roots.title" data-icon="folders"></button>
+        <button class="icon-btn" id="btn-rescan" data-i18n-title="action.rescan" data-icon="refresh"></button>
+      </footer>
+    </aside>
+
+    <div class="resizer" id="resizer" role="separator" aria-orientation="vertical"></div>
+
+    <main class="main">
+      <header class="doc-head drag" id="doc-head" hidden>
+        <div class="doc-meta">
+          <div class="doc-title">
+            <h1 id="doc-name"></h1>
+            <span class="dirty-dot" id="dirty-dot" data-i18n-title="doc.unsaved" hidden></span>
+          </div>
+          <p class="doc-desc" id="doc-desc"></p>
+          <div class="doc-origin" id="doc-origin"></div>
+          <code class="doc-path" id="doc-path"></code>
+        </div>
+        <div class="doc-actions no-drag">
+          <button class="icon-btn" id="btn-reveal" data-icon="folder"></button>
+          <button class="icon-btn" id="btn-open" data-i18n-title="action.openExternal" data-icon="external"></button>
+          <button class="btn primary" id="btn-save" data-i18n="action.save" disabled></button>
+        </div>
+      </header>
+
+      <div class="empty drag" id="empty">
+        <div class="empty-inner">
+          <span class="empty-icon" data-icon="file"></span>
+          <p data-i18n="doc.empty"></p>
+        </div>
+      </div>
+
+      <div class="editor-wrap" id="editor-wrap" hidden>
+        <textarea id="editor"></textarea>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="../../node_modules/easymde/dist/easymde.min.js"></script>
+  <script src="../shared/frontmatter.js"></script>
+  <script src="../shared/i18n.js"></script>
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
