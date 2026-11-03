@@ -1,5 +1,5 @@
 'use strict';
-/* Logique de mise à jour indépendante d'Electron (testable avec Node seul). */
+/* Update logic independent of Electron (testable with plain Node). */
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const fsp = require('node:fs/promises');
@@ -7,20 +7,20 @@ const path = require('node:path');
 const { once } = require('node:events');
 const { finished } = require('node:stream/promises');
 
-/** "owner/repo" depuis le champ repository de package.json. */
+/** "owner/repo" from the repository field of package.json. */
 function repoFromPackage(pkg) {
   const url = typeof pkg.repository === 'string' ? pkg.repository : pkg.repository?.url;
   const m = /github\.com[/:]([^/\s]+)\/([^/\s#]+?)(?:\.git)?(?:[#/].*)?$/.exec(url || '');
   return m ? `${m[1]}/${m[2]}` : null;
 }
 
-/** "sha256:<hex>" (champ digest des assets GitHub) → hex, sinon null. */
+/** "sha256:<hex>" (digest field of GitHub assets) → hex, otherwise null. */
 function parseDigest(digest) {
   const m = /^sha256:([0-9a-f]{64})$/i.exec(digest || '');
   return m ? m[1].toLowerCase() : null;
 }
 
-/** Dernière release stable : { version, tag, url, assets } ou null s'il n'y en a pas. */
+/** Latest stable release: { version, tag, url, assets }, or null if there is none. */
 async function fetchLatestRelease({ fetch, repo, feedUrl, userAgent }) {
   const url = feedUrl || `https://api.github.com/repos/${repo}/releases/latest`;
   const res = await fetch(url, {
@@ -45,12 +45,12 @@ async function fetchLatestRelease({ fetch, repo, feedUrl, userAgent }) {
 }
 
 /**
- * Asset à installer pour la plateforme courante (noms produits par electron-builder, cf. package.json) :
+ * Asset to install on the current platform (names produced by electron-builder, see package.json):
  * macOS → *-mac-<arch>.dmg, Windows → *-win-setup.exe.
  */
 function pickAsset(assets, { platform, arch, translated = false }) {
   if (platform === 'darwin') {
-    const want = translated ? 'arm64' : arch; // app x64 sous Rosetta → version native
+    const want = translated ? 'arm64' : arch; // x64 app under Rosetta → native build
     return assets.find((a) => a.name.endsWith(`-mac-${want}.dmg`))
       || assets.find((a) => a.name.endsWith(`-${want}.dmg`))
       || null;
@@ -70,8 +70,8 @@ async function sha256File(file) {
 }
 
 /**
- * Télécharge `url` vers `dest` (via un fichier .part), vérifie la taille et le sha256.
- * Si `dest` existe déjà avec le bon sha256, il est réutilisé sans téléchargement.
+ * Downloads `url` to `dest` (through a .part file), checks the size and the sha256.
+ * If `dest` already exists with the expected sha256, it is reused without downloading.
  */
 async function download({ fetch, url, dest, expectedSha256, onProgress, headers }) {
   if (expectedSha256) {
@@ -114,7 +114,7 @@ async function download({ fetch, url, dest, expectedSha256, onProgress, headers 
   }
 }
 
-/** Chemins de travail à côté du bundle .app installé. */
+/** Working paths next to the installed .app bundle. */
 function macPaths(target) {
   const dir = path.dirname(target);
   const base = path.basename(target);
@@ -122,8 +122,8 @@ function macPaths(target) {
 }
 
 /**
- * Remplace le bundle installé par la copie préparée (synchrone : appelé pendant will-quit).
- * L'ancien bundle est gardé en .old (supprimé au lancement suivant) et restauré en cas d'échec.
+ * Replaces the installed bundle with the staged copy (synchronous: called during will-quit).
+ * The previous bundle is kept as .old (removed at the next launch) and restored on failure.
  */
 function swapMacBundle(target, staged) {
   const { backup } = macPaths(target);

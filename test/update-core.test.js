@@ -12,14 +12,14 @@ const semver = require('../src/shared/semver');
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'skills-book-test-'));
 const sha = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 
-// Noms réels de la release v0.2.0
+// Actual asset names of release v0.2.0
 const ASSETS = [
   { name: 'skills-book-0.2.0-mac-arm64.dmg' },
   { name: 'skills-book-0.2.0-mac-x64.dmg' },
   { name: 'skills-book-0.2.0-win-setup.exe' },
 ];
 
-test('semver: ordre de la spec et isNewer', () => {
+test('semver: spec precedence and isNewer', () => {
   const seq = ['1.0.0-alpha', '1.0.0-alpha.1', '1.0.0-alpha.beta', '1.0.0-beta', '1.0.0-beta.2', '1.0.0-beta.11', '1.0.0-rc.1', '1.0.0', '1.0.1', '1.1.0', '2.0.0'];
   for (let i = 0; i < seq.length - 1; i++) {
     assert.ok(semver.compare(semver.parse(seq[i]), semver.parse(seq[i + 1])) < 0, `${seq[i]} < ${seq[i + 1]}`);
@@ -45,7 +45,7 @@ test('parseDigest', () => {
   assert.equal(core.parseDigest(undefined), null);
 });
 
-test('pickAsset selon la plateforme', () => {
+test('pickAsset: per platform and arch', () => {
   const pick = (platform, arch, translated) => core.pickAsset(ASSETS, { platform, arch, translated })?.name ?? null;
   assert.equal(pick('darwin', 'arm64'), 'skills-book-0.2.0-mac-arm64.dmg');
   assert.equal(pick('darwin', 'x64'), 'skills-book-0.2.0-mac-x64.dmg');
@@ -55,7 +55,7 @@ test('pickAsset selon la plateforme', () => {
   assert.equal(pick('linux', 'x64'), null);
 });
 
-test('fetchLatestRelease: mapping, 404 et erreurs', async () => {
+test('fetchLatestRelease: mapping, 404 and errors', async () => {
   const hex = 'b'.repeat(64);
   const body = {
     tag_name: 'v0.3.0',
@@ -79,7 +79,7 @@ test('fetchLatestRelease: mapping, 404 et erreurs', async () => {
   await assert.rejects(core.fetchLatestRelease({ fetch: fake(500), repo: 'o/r' }), /HTTP 500/);
 });
 
-test('download: redirection, progression, sha256, cache', async (t) => {
+test('download: redirect, progress, sha256, cache', async (t) => {
   const payload = crypto.randomBytes(256 * 1024);
   let hits = 0;
   const server = http.createServer((req, res) => {
@@ -111,7 +111,7 @@ test('download: redirection, progression, sha256, cache', async (t) => {
   assert.equal(fs.existsSync(`${bad}.part`), false);
 });
 
-test('swapMacBundle: échange et restauration en cas d’échec', () => {
+test('swapMacBundle: swap, and restore on failure', () => {
   const dir = tmp();
   const target = path.join(dir, 'Skills Book.app');
   const { staged, backup } = core.macPaths(target);
@@ -123,7 +123,7 @@ test('swapMacBundle: échange et restauration en cas d’échec', () => {
   assert.equal(fs.readFileSync(path.join(backup, 'v'), 'utf8'), 'old');
   assert.equal(fs.existsSync(staged), false);
 
-  // Copie préparée absente : l'app installée doit rester en place.
+  // Missing staged copy: the installed app must stay in place.
   assert.throws(() => core.swapMacBundle(target, staged));
   assert.equal(fs.readFileSync(path.join(target, 'v'), 'utf8'), 'new');
 });

@@ -1,4 +1,4 @@
-/* Icônes (tracés Lucide, ISC). */
+/* Icons (Lucide paths, ISC license). */
 window.Icons = (() => {
   const P = {
     search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
@@ -30,7 +30,7 @@ window.Icons = (() => {
   const svg = (name, size = 16) =>
     `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[name] || ''}</svg>`;
 
-  /** Remplace les [data-icon] du DOM par leur SVG. */
+  /** Replaces [data-icon] elements with their SVG. */
   const hydrate = (root = document) => {
     root.querySelectorAll('[data-icon]').forEach((el) => {
       el.insertAdjacentHTML('afterbegin', svg(el.dataset.icon, Number(el.dataset.size) || 16));

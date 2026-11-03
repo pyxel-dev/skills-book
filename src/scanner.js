@@ -6,7 +6,7 @@ const { parse } = require('./shared/frontmatter');
 const MAX_DEPTH = 9;
 const IS_WIN = process.platform === 'win32';
 
-/** Dossiers de config reconnus → les skills/agents dessous sont globaux (si dans $HOME) ou locaux (projet). */
+/** Known config folders: skills/agents below them are global (directly in $HOME) or local (in a project). */
 const CONFIG_DIRS = new Set(['.claude', '.codex', '.agents', '.cursor', '.gemini']);
 
 const IGNORED = new Set([
@@ -14,9 +14,9 @@ const IGNORED = new Set([
   '.venv', 'venv', '__pycache__', 'dist', 'build', 'out', 'target', 'coverage',
   'Pods', 'DerivedData', 'Library', 'AppData', '.Trash', '$RECYCLE.BIN',
 ]);
-/** Contenu volumineux ou inactif de ~/.claude. */
+/** Large or inactive content of ~/.claude. */
 const IGNORED_IN_HOME_CLAUDE = new Set(['projects', 'file-history', 'todos', 'shell-snapshots', 'statsig', 'debug', 'session-env', 'telemetry', 'ide', 'local']);
-/** ~/.claude/plugins : marketplaces = catalogue (non chargé), data = état des plugins, .trash = supprimés. */
+/** ~/.claude/plugins: marketplaces = catalog (not loaded), data = plugin state, .trash = removed plugins. */
 const IGNORED_IN_PLUGINS = new Set(['marketplaces', 'data', '.trash']);
 
 function defaultRoots(home) {
@@ -39,7 +39,7 @@ async function readJson(p) {
   try { return JSON.parse(await fs.readFile(p, 'utf8')); } catch { return null; }
 }
 
-/** Type d'une entrée en suivant les liens symboliques. */
+/** Entry type, following symlinks. */
 async function kind(full, dirent) {
   if (!dirent.isSymbolicLink()) return dirent.isDirectory() ? 'dir' : dirent.isFile() ? 'file' : null;
   try {
@@ -48,7 +48,7 @@ async function kind(full, dirent) {
   } catch { return null; }
 }
 
-/** Portée d'un fichier selon le dernier dossier de config de son chemin. */
+/** Scope of a file, based on the last config folder in its path. */
 function classify(file, home) {
   const segs = file.split(path.sep);
   for (let i = segs.length - 2; i >= 0; i--) {
@@ -62,8 +62,8 @@ function classify(file, home) {
 }
 
 /**
- * Parcourt les racines et retourne skills (dossier contenant SKILL.md) et agents
- * (.md avec frontmatter dans un dossier agents/ de .claude ou d'un plugin).
+ * Walks the roots and returns skills (folder containing SKILL.md) and agents
+ * (.md with frontmatter in an agents/ folder of .claude or of a plugin).
  */
 async function scanSkills(roots, home) {
   const homeClaude = norm(path.join(home, '.claude'));
@@ -88,11 +88,11 @@ async function scanSkills(roots, home) {
       ...item,
       ...classify(file, home),
     };
-    // Doublons via liens symboliques : on garde le chemin non lié.
+    // Duplicates through symlinks: keep the non-linked path.
     if (!found.has(real) || file === real) found.set(real, entry);
   }
 
-  /** Contexte d'un dossier : plugin parent éventuel et mode "agents". */
+  /** Folder context: parent plugin (if any) and "agents" mode. */
   async function pluginFor(dir, names, parentPlugin) {
     const n = norm(dir);
     const rel = n.startsWith(homePlugins + path.sep) ? path.relative(homePlugins, dir).split(path.sep) : null;
@@ -106,7 +106,7 @@ async function scanSkills(roots, home) {
         path: dir,
       };
     }
-    // Manifest optionnel : cache/<marketplace>/<plugin>/<version>/ ou synced/<plugin>/
+    // Optional manifest: cache/<marketplace>/<plugin>/<version>/ or synced/<plugin>/
     if (rel && rel[0] === 'cache' && rel.length === 4) return { name: rel[2], marketplace: rel[1], path: dir };
     if (rel && rel[0] === 'synced' && rel.length === 2) return { name: rel[1], marketplace: 'claude.ai', path: dir };
     return parentPlugin;
@@ -122,7 +122,7 @@ async function scanSkills(roots, home) {
     let entries;
     try { entries = await fs.readdir(dir, { withFileTypes: true }); } catch { return; }
     const names = entries.map((e) => e.name);
-    if (names.includes('.orphaned_at')) return; // ancienne version de plugin en attente de suppression
+    if (names.includes('.orphaned_at')) return; // old plugin version waiting for cleanup
 
     const plugin = await pluginFor(dir, names, ctx.plugin);
     const nd = norm(dir);

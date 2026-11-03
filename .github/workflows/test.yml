@@ -21,6 +21,6 @@ jobs:
         with:
           node-version: 24
 
-      # Tests sans dépendance npm : pas besoin de npm ci (ni du téléchargement d'Electron).
+      # Tests have no npm dependency: no npm ci (and no Electron download) needed.
       - name: Run tests
         run: npm test

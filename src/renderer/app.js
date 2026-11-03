@@ -33,7 +33,7 @@
     current: null, saved: '', mtimeMs: 0, dirty: false, loading: false,
   };
 
-  /* ---------- Utilitaires ---------- */
+  /* ---------- Utilities ---------- */
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
   const tilde = (p) => (state.home && (p === state.home || p.startsWith(state.home + SEP)) ? '~' + p.slice(state.home.length) : p);
@@ -51,7 +51,7 @@
 
   const SCOPE_ORDER = { global: 0, local: 1, other: 2 };
 
-  /** Groupe d'affichage d'un élément : config globale, plugin, projet, ou dossier libre. */
+  /** Display group of an item: global config, plugin, project or plain folder. */
   function groupOf(s) {
     if (s.plugin) {
       return { key: `p:${s.plugin.path}`, scope: s.scope, icon: 'puzzle', label: s.plugin.name, sub: s.plugin.marketplace || s.project?.name || '', title: s.plugin.path, rank: 1 };
@@ -67,14 +67,14 @@
 
   const pill = (scope) => `<span class="pill pill-${scope}" title="${esc(t(`scope.${scope}.title`))}">${esc(t(`scope.${scope}`))}</span>`;
 
-  /** Chemin affiché en deux parties : tête tronquée, 2 derniers segments toujours visibles. */
+  /** Path shown in two parts: truncated head, last 2 segments always visible. */
   function splitPath(p) {
     const parts = tilde(p).split(/[\\/]/);
     const tail = parts.splice(-2).join(SEP);
     return { head: parts.length ? parts.join(SEP) + SEP : '', tail };
   }
 
-  /* ---------- Éditeur ---------- */
+  /* ---------- Editor ---------- */
 
   const TOOLS = [
     ['bold', EasyMDE.toggleBold, 'bold'],
@@ -91,7 +91,7 @@
     ['preview', EasyMDE.togglePreview, 'eye', true],
     ['side-by-side', EasyMDE.toggleSideBySide, 'columns', true],
   ];
-  // Titres provisoires = clés ; traduits (avec le raccourci ajouté par EasyMDE) dans applyLang().
+  // Placeholder titles are i18n keys; translated (keeping the shortcut EasyMDE appends) in applyLang().
   const toolbar = TOOLS.map((x) => (x === '|' ? x : {
     name: x[0], action: x[1], title: `tb.${x[0]}`, className: `tb-${x[0]}`, icon: Icons.svg(x[2]), noDisable: Boolean(x[3]),
   }));
@@ -119,7 +119,7 @@
   });
 
   const cm = mde.codemirror;
-  // Suffixe de raccourci ajouté par EasyMDE au title (ex. " (Ctrl-B)"), conservé lors des changements de langue.
+  // Shortcut suffix EasyMDE appends to the title (e.g. " (Ctrl-B)"), kept across language changes.
   for (const btn of document.querySelectorAll('.editor-toolbar button[title^="tb."]')) {
     const key = btn.title.match(/^tb\.[\w-]+/)[0];
     btn.dataset.i18nKey = key;
@@ -150,7 +150,7 @@
     els.desc.textContent = data.description ?? state.current.description;
   }, 150);
 
-  // Le mode Markdown de CodeMirror interprète le frontmatter (setext headers…) : on le neutralise visuellement.
+  // CodeMirror's Markdown mode misreads the frontmatter (setext headers…): style it as plain text.
   let fmMark = null;
   let fmLines = 0;
   function markFrontmatter() {
@@ -239,7 +239,7 @@
 
   let saving = null;
   function save() {
-    // Menu natif + raccourci clavier peuvent se déclencher ensemble : une seule écriture à la fois.
+    // The native menu and the keyboard shortcut can both fire: only one write at a time.
     saving ??= doSave().finally(() => { saving = null; });
     return saving;
   }
@@ -265,7 +265,7 @@
     return res.status;
   }
 
-  /** true si on peut quitter le document courant. */
+  /** true if the current document can be left. */
   async function resolveUnsaved() {
     if (!state.dirty) return true;
     const choice = await api.confirmUnsaved(els.name.textContent || state.current.name);
@@ -279,7 +279,7 @@
     if (await resolveUnsaved()) await open(id);
   }
 
-  /* ---------- Liste ---------- */
+  /* ---------- List ---------- */
 
   const ofKind = () => state.skills.filter((s) => s.kind === state.kind);
 
@@ -329,7 +329,7 @@
     const groups = new Map();
     for (const s of items) {
       const g = groupOf(s);
-      g.key = `${s.kind}|${g.key}`; // repli mémorisé par onglet
+      g.key = `${s.kind}|${g.key}`; // collapsed state is remembered per tab
       if (!groups.has(g.key)) groups.set(g.key, { ...g, items: [] });
       groups.get(g.key).items.push(s);
     }
@@ -414,7 +414,7 @@
     renderList();
   });
 
-  // Séparateur sous l'en-tête fixe dès que la liste a défilé.
+  // Divider under the fixed header once the list has scrolled.
   const sidebarTop = document.querySelector('.sidebar-top');
   els.list.addEventListener('scroll', () => sidebarTop.classList.toggle('scrolled', els.list.scrollTop > 0), { passive: true });
 
@@ -424,7 +424,7 @@
     if (e.key === 'Escape' && els.filter.value) { els.filter.value = ''; state.filter = ''; renderList(); }
   });
 
-  /* ---------- Scan & dossiers ---------- */
+  /* ---------- Scan & folders ---------- */
 
   async function scan() {
     els.list.classList.add('busy');
@@ -479,7 +479,7 @@
   $('btn-roots-close').addEventListener('click', () => toggleRoots(false));
   $('btn-rescan').addEventListener('click', async () => { await scan(); toast(t('toast.scanned')); });
 
-  /* ---------- Actions document ---------- */
+  /* ---------- Document actions ---------- */
 
   els.save.addEventListener('click', save);
   els.reveal.addEventListener('click', () => state.current && api.reveal(state.current.id));
@@ -495,7 +495,7 @@
   api.on('menu:find', () => { els.filter.focus(); els.filter.select(); });
   api.on('app:save-then-close', async () => { if ((await save()) === 'saved') api.closeNow(); });
 
-  // Fichier modifié ailleurs pendant que l'app était en arrière-plan.
+  // File changed elsewhere while the app was in the background.
   window.addEventListener('focus', async () => {
     if (!state.current || state.dirty) return;
     try {
@@ -504,7 +504,7 @@
     } catch {}
   });
 
-  /* ---------- Redimensionnement de la sidebar ---------- */
+  /* ---------- Sidebar resizing ---------- */
 
   const setSidebar = (w) => document.documentElement.style.setProperty('--sidebar-w', `${Math.round(Math.min(560, Math.max(220, w)))}px`);
   try { const w = Number(localStorage.getItem('sidebar-w')); if (w) setSidebar(w); } catch {}
@@ -523,7 +523,7 @@
     els.resizer.addEventListener('pointerup', up, { once: true });
   });
 
-  /* ---------- Langue ---------- */
+  /* ---------- Language ---------- */
 
   const langSelect = $('lang');
   langSelect.innerHTML = Object.entries(I18n.LANGS).map(([code, name]) => `<option value="${code}">${name}</option>`).join('');
@@ -551,7 +551,7 @@
 
   langSelect.addEventListener('change', async () => applyLang(await api.setLang(langSelect.value)));
 
-  /* ---------- Mise à jour (statut envoyé par le main) ---------- */
+  /* ---------- Update status (sent by the main process) ---------- */
 
   const upd = { box: $('update-status'), text: $('update-text'), fill: $('update-fill') };
   let updateState = { state: 'idle' };
@@ -576,7 +576,7 @@
     if (s?.state === 'error') toast(t('update.failed', { error: s.message }), 'error');
   });
 
-  /* ---------- Démarrage ---------- */
+  /* ---------- Startup ---------- */
 
   showDoc(false);
   api.getLang().then(applyLang).then(scan).then(() => {

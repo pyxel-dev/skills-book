@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Vérifie qu'une PR vers main augmente la version de package.json (= version de la release).
-// Usage : node scripts/check-version.mjs [base-ref]   (défaut : origin/main)
+// Checks that a PR to main bumps the version in package.json (= the release version).
+// Usage: node scripts/check-version.mjs [base-ref]   (default: origin/main)
 import { appendFileSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import semver from '../src/shared/semver.js';
 
 const { compare } = semver;
-// Version de package.json : stricte, sans préfixe "v".
+// package.json version: strict, no "v" prefix.
 const parse = (version) => (/^\d/.test(String(version)) ? semver.parse(version) : null);
 
 const baseRef = process.argv[2] || 'origin/main';

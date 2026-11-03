@@ -1,4 +1,4 @@
-/* Traductions partagées main / renderer (UMD : require() ou window.I18n). */
+/* Translations shared by main and renderer (UMD: require() or window.I18n). */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.I18n = factory();
@@ -111,7 +111,7 @@
       'menu.showAll': 'Show All',
       'menu.quitApp': 'Quit {name}',
       'menu.help': 'Help',
-      // Mises à jour
+      // Updates
       'update.available': 'Skills Book {version} is available',
       'update.availableDetail': 'You have version {current}. The update will be downloaded and installed, then the app will restart.',
       'update.devDetail': 'You have version {current}. The app is running from source: update it with git pull.',
