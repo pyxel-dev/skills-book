@@ -24,6 +24,12 @@ contextBridge.exposeInMainWorld('api', {
   setDirty: (value) => ipcRenderer.send('state:dirty', value),
   closeNow: () => ipcRenderer.send('app:close-now'),
 
+  onUpdateStatus(cb) {
+    const handler = (_e, status) => cb(status);
+    ipcRenderer.on('update:status', handler);
+    return () => ipcRenderer.removeListener('update:status', handler);
+  },
+
   on(channel, cb) {
     if (!EVENTS.has(channel)) throw new Error(`Event not allowed: ${channel}`);
     const handler = () => cb();

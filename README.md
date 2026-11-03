@@ -35,6 +35,17 @@ Since the builds are unsigned:
 - **macOS**: after copying the app to Applications, run `xattr -cr "/Applications/Skills Book.app"` once, otherwise macOS reports it as damaged.
 - **Windows**: SmartScreen shows a warning; choose *More info* → *Run anyway*.
 
+## Updates
+
+At launch, the app checks the latest GitHub release (pre-releases excluded). You can also check by hand: *Skills Book → Check for Updates…* on macOS, *Help → Check for Updates…* on Windows. When a newer version exists, *Update and Restart* downloads the installer for your system, verifies its SHA-256 digest against the release, installs it and restarts the app:
+
+- **macOS**: the new app is copied next to the installed one and swapped in when the app quits. Squirrel.Mac (electron-updater) can't be used without a Developer ID signature. If the app can't replace itself (read-only folder, launched from the disk image), the disk image is opened for a manual install.
+- **Windows**: the NSIS installer runs silently (`/S --updated --force-run`) and relaunches the app.
+
+Unsaved changes trigger the usual save prompt first; cancelling it postpones the update until the app quits. The updater ships with 0.3.0: older versions must be updated manually once.
+
+To test without publishing, serve a JSON file in the GitHub release format and run `SKILLS_BOOK_UPDATE_FEED=http://localhost:8080/latest.json npm start` (ignored in packaged builds).
+
 ## Releasing
 
 Every pull request to `main` must bump `version` in `package.json`: the required **Version bump** check ([`version-check.yml`](.github/workflows/version-check.yml)) fails if the version is not greater than the one on `main`, if `package-lock.json` is out of sync, or if the tag already exists.
@@ -78,9 +89,13 @@ src/
   main.js                 main process, IPC, menu, dialogs
   preload.js              API exposed through contextBridge
   scanner.js              finds skills (SKILL.md) and agents
+  updater.js              update check, download and install (Electron side)
+  update-core.js          GitHub release lookup, asset choice, download + SHA-256, bundle swap
   shared/frontmatter.js   minimal YAML parser (main + renderer)
   shared/i18n.js          translations (main + renderer): adding a language = one entry in LANGS + dict
+  shared/semver.js        semver parsing/comparison (updater + version check)
   renderer/               UI (HTML/CSS/JS, no bundler)
+test/                     node --test (npm test)
 ```
 
 Security: `contextIsolation`, `sandbox`, no `nodeIntegration`, strict CSP. The main process only allows reading/writing files returned by the latest scan.
