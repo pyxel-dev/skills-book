@@ -1,0 +1,27 @@
+name: Version check
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Version bump
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # branche de base + tags
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Check that package.json version is bumped
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: node scripts/check-version.mjs "origin/$BASE_REF"
