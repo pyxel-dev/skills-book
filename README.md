@@ -1,6 +1,6 @@
 # Skills Book
 
-App Electron (macOS / Windows) qui liste les `SKILL.md` de la machine et les édite en Markdown.
+Electron app (macOS / Windows) that lists the skills and agents on your machine and lets you edit them as Markdown.
 
 ```bash
 npm install
@@ -11,47 +11,47 @@ npm start
 
 ```bash
 npm run dist:mac   # dmg arm64 + x64
-npm run dist:win   # installeur NSIS x64 + arm64 (à lancer sur Windows)
+npm run dist:win   # NSIS installer x64 + arm64 (run on Windows)
 ```
 
-Sortie dans `dist/`. Builds non signés.
+Output goes to `dist/`. Builds are unsigned.
 
-## Fonctionnement
+## How it works
 
-- **Onglets Skills / Agents**. Skill = dossier contenant `SKILL.md`. Agent = `.md` avec frontmatter dans un `agents/` de `.claude` ou d'un plugin (sous-dossiers inclus).
-- **Portée** :
-  - `Global` : sous un dossier de config du home (`~/.claude`, `~/.codex`, `~/.agents`…), plugins installés compris.
-  - `Local` : sous `<projet>/.claude` (ou `.codex`, `.agents`…).
-  - `Autre` : dossier libre, hors config.
-  Groupes repliables par source (config, plugin, projet), filtre Tout / Global / Local.
-- **Dossiers scannés** (bouton en bas de la sidebar) : par défaut `~/.claude/skills`, `~/.claude/agents`, `~/.claude/plugins`, `~/.agents/skills`, `~/.codex/skills`. Ajoute `~/dev` (ou équivalent) pour voir les skills/agents locaux de tes projets. Config dans `userData/config.json`.
-- Scan récursif (profondeur 9), ignore `node_modules`, `.git`, `dist`, `build`, etc. Dans `~/.claude/plugins` : seul ce qui est chargé est listé (`cache/`, `synced/`), pas le catalogue `marketplaces/` ni les versions orphelines (`.orphaned_at`). Liens symboliques suivis, doublons fusionnés.
-- **Langue** : sélecteur en bas de la sidebar (English par défaut, Français). UI, dialogues natifs et menus ; choix mémorisé dans `config.json`.
-- Nom et description tirés du frontmatter (`name`, `description`), sinon nom du dossier/fichier.
-- Éditeur EasyMDE : aperçu, côte à côte, frontmatter rendu en tableau dans l'aperçu.
-- Sauvegarde : fin de ligne d'origine conservée (LF/CRLF), détection de modification externe (rechargement auto si pas de modif locale, sinon choix Écraser / Recharger).
+- **Skills / Agents tabs**. Skill = folder containing a `SKILL.md`. Agent = `.md` file with frontmatter inside an `agents/` folder of `.claude` or of a plugin (subfolders included).
+- **Scope**:
+  - `Global`: under a config folder in your home directory (`~/.claude`, `~/.codex`, `~/.agents`…), installed plugins included.
+  - `Local`: under `<project>/.claude` (or `.codex`, `.agents`…).
+  - `Other`: any folder outside a config folder.
+  Collapsible groups by source (config, plugin, project), with an All / Global / Local filter.
+- **Scanned folders** (button at the bottom of the sidebar): by default `~/.claude/skills`, `~/.claude/agents`, `~/.claude/plugins`, `~/.agents/skills`, `~/.codex/skills`. Add `~/dev` (or similar) to see the local skills/agents of your projects. Config is stored in `userData/config.json`.
+- Recursive scan (depth 9), skips `node_modules`, `.git`, `dist`, `build`, etc. In `~/.claude/plugins`, only what is actually loaded is listed (`cache/`, `synced/`), not the `marketplaces/` catalog or orphaned versions (`.orphaned_at`). Symlinks are followed and duplicates merged.
+- **Language**: picker at the bottom of the sidebar (English by default, French). Covers the UI, native dialogs and menus; the choice is saved in `config.json`.
+- Name and description come from the frontmatter (`name`, `description`), otherwise from the folder/file name.
+- EasyMDE editor: preview, side by side, frontmatter rendered as a table in the preview.
+- Saving: original line endings are kept (LF/CRLF), external changes are detected (auto-reload when there are no local edits, otherwise a choice between Overwrite / Reload).
 
-## Raccourcis
+## Shortcuts
 
 | | |
 |---|---|
-| `⌘/Ctrl S` | Enregistrer |
-| `⌘/Ctrl F` | Filtrer les skills |
-| `⌘/Ctrl R` | Rescanner |
-| `⌘/Ctrl O` | Ajouter un dossier |
-| `⌘/Ctrl P` | Aperçu |
-| `F9` | Côte à côte |
+| `⌘/Ctrl S` | Save |
+| `⌘/Ctrl F` | Filter the list |
+| `⌘/Ctrl R` | Rescan |
+| `⌘/Ctrl O` | Add a folder |
+| `⌘/Ctrl P` | Preview |
+| `F9` | Side by side |
 
 ## Structure
 
 ```
 src/
-  main.js             process principal, IPC, menu, dialogs
-  preload.js          API exposée via contextBridge
-  scanner.js          recherche des SKILL.md
-  shared/frontmatter.js   parseur YAML minimal (main + renderer)
-  shared/i18n.js          traductions (main + renderer) — ajouter une langue = une entrée dans LANGS + dict
-  renderer/           UI (HTML/CSS/JS sans bundler)
+  main.js                 main process, IPC, menu, dialogs
+  preload.js              API exposed through contextBridge
+  scanner.js              finds skills (SKILL.md) and agents
+  shared/frontmatter.js   minimal YAML parser (main + renderer)
+  shared/i18n.js          translations (main + renderer): adding a language = one entry in LANGS + dict
+  renderer/               UI (HTML/CSS/JS, no bundler)
 ```
 
-Sécurité : `contextIsolation`, `sandbox`, pas de `nodeIntegration`, CSP stricte. Le main n'accepte lecture/écriture que sur les fichiers issus du dernier scan.
+Security: `contextIsolation`, `sandbox`, no `nodeIntegration`, strict CSP. The main process only allows reading/writing files returned by the latest scan.
