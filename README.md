@@ -2,6 +2,11 @@
 
 Electron app (macOS / Windows) that lists the skills and agents on your machine and lets you edit them as Markdown.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screenshot-dark.png">
+  <img alt="Skills Book: skills grouped by scope in the sidebar, with the Markdown editor and live preview side by side" src="docs/screenshot.png">
+</picture>
+
 ```bash
 npm install
 npm start
