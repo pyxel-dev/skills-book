@@ -1,10 +1,10 @@
 'use strict';
 /*
- * Mise à jour depuis les releases GitHub.
- * - Vérification au lancement (silencieuse) et via le menu (avec retour à l'utilisateur).
- * - macOS : le .dmg est monté, l'app copiée à côté du bundle installé, puis échangée à la fermeture.
- *   (Squirrel.Mac / electron-updater exigent une signature Developer ID, que les builds n'ont pas.)
- * - Windows : l'installeur NSIS est lancé en silencieux à la fermeture et relance l'app.
+ * Updates from GitHub releases.
+ * - Checked at launch (silently) and from the menu (with feedback to the user).
+ * - macOS: the .dmg is mounted, the app copied next to the installed bundle, then swapped in on quit.
+ *   (Squirrel.Mac / electron-updater require a Developer ID signature, which the builds don't have.)
+ * - Windows: the NSIS installer runs silently on quit and relaunches the app.
  */
 const { app, dialog, net, shell } = require('electron');
 const fs = require('node:fs');
@@ -21,12 +21,12 @@ const LAUNCH_DELAY_MS = 3000;
 
 function createUpdater({ getWindow, tr, send }) {
   const repo = core.repoFromPackage(pkg);
-  // Flux de test (JSON au format de l'API GitHub), uniquement hors app packagée.
+  // Test feed (JSON in the GitHub API format), only outside the packaged app.
   const feedUrl = !app.isPackaged ? process.env.SKILLS_BOOK_UPDATE_FEED : undefined;
   const userAgent = `Skills-Book/${app.getVersion()} (+https://github.com/${repo})`;
 
   let busy = false;
-  /** Installation prête, appliquée à la fermeture : { kind: 'mac', target, staged, version } | { kind: 'win', installer, version } */
+  /** Install ready, applied on quit: { kind: 'mac', target, staged, version } | { kind: 'win', installer, version } */
   let pending = null;
 
   const win = () => getWindow();
@@ -39,7 +39,7 @@ function createUpdater({ getWindow, tr, send }) {
     if (w && !w.isDestroyed()) w.setProgressBar(value);
   }
 
-  /* ---------- Vérification ---------- */
+  /* ---------- Check ---------- */
 
   async function check({ interactive = false } = {}) {
     if (busy || pending) {
@@ -96,7 +96,7 @@ function createUpdater({ getWindow, tr, send }) {
     }
   }
 
-  /* ---------- Téléchargement et préparation ---------- */
+  /* ---------- Download and preparation ---------- */
 
   async function install(release, asset) {
     const { version } = release;
@@ -124,7 +124,7 @@ function createUpdater({ getWindow, tr, send }) {
       });
 
       status({ state: 'installing', version });
-      setProgress(2); // indéterminé
+      setProgress(2); // indeterminate
       pending = process.platform === 'darwin' ? await prepareMac(file, version) : { kind: 'win', installer: file, version };
       setProgress(-1);
 
@@ -132,8 +132,8 @@ function createUpdater({ getWindow, tr, send }) {
         status({ state: 'idle' });
         return;
       }
-      // Relance enregistrée tout de suite (Windows : c'est l'installeur qui relance) ;
-      // si la fermeture est annulée, l'update et la relance auront lieu à la prochaine fermeture.
+      // Register the relaunch now (on Windows the installer relaunches the app);
+      // if the quit is cancelled, the update and the relaunch happen on the next quit.
       if (pending.kind === 'mac') app.relaunch();
       app.quit();
     } catch (err) {
@@ -142,7 +142,7 @@ function createUpdater({ getWindow, tr, send }) {
     }
   }
 
-  /** Copie l'app du .dmg à côté du bundle installé ; null si l'emplacement n'est pas modifiable. */
+  /** Copies the app from the .dmg next to the installed bundle; null if that location is not writable. */
   async function prepareMac(dmg, version) {
     const target = path.resolve(process.execPath, '..', '..', '..');
     const parent = path.dirname(target);
@@ -176,7 +176,7 @@ function createUpdater({ getWindow, tr, send }) {
     }
   }
 
-  /* ---------- Application à la fermeture ---------- */
+  /* ---------- Apply on quit ---------- */
 
   function apply() {
     const job = pending;
@@ -186,7 +186,7 @@ function createUpdater({ getWindow, tr, send }) {
       if (job.kind === 'mac') {
         core.swapMacBundle(job.target, job.staged);
       } else if (job.kind === 'win') {
-        // --updated : mise à jour silencieuse dans le dossier existant ; --force-run : relance après installation.
+        // --updated: silent update in the existing install folder; --force-run: relaunch after install.
         spawn(job.installer, ['/S', '--updated', '--force-run'], { detached: true, stdio: 'ignore' }).unref();
       }
     } catch (err) {
@@ -196,7 +196,7 @@ function createUpdater({ getWindow, tr, send }) {
 
   app.on('will-quit', apply);
 
-  /** Nettoyage au lancement : ancien bundle (.old) et copie préparée non utilisée (.update). */
+  /** Cleanup at launch: previous bundle (.old) and unused staged copy (.update). */
   async function cleanup() {
     if (!app.isPackaged || process.platform !== 'darwin') return;
     const { staged, backup } = core.macPaths(path.resolve(process.execPath, '..', '..', '..'));
@@ -207,9 +207,9 @@ function createUpdater({ getWindow, tr, send }) {
     check,
     cleanup,
     hasPending: () => Boolean(pending),
-    /** La fermeture a été annulée (modifications non enregistrées) : l'update attendra la prochaine. */
+    /** The quit was cancelled (unsaved changes): the update waits for the next quit. */
     quitCancelled: () => { if (pending) status({ state: 'deferred', version: pending.version }); },
-    /** Vérification automatique au lancement : app packagée, ou flux de test en dev. */
+    /** Automatic check at launch: packaged app, or test feed in development. */
     scheduleLaunchCheck() {
       if (!app.isPackaged && !feedUrl) return;
       setTimeout(() => check({ interactive: false }), LAUNCH_DELAY_MS);

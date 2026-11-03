@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 
-# Pas de concurrency/cancel-in-progress : chaque merge porte sa propre version et doit produire sa release.
+# No concurrency/cancel-in-progress: every merge carries its own version and must produce its release.
 
 jobs:
   build:
@@ -59,7 +59,7 @@ jobs:
   release:
     name: Release
     needs: build
-    # Release uniquement sur merge/push dans main ; un lancement manuel ne fait que builder.
+    # Release only on push/merge to main; a manual run only builds.
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10

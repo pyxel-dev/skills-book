@@ -7,7 +7,12 @@ const I18n = require('./shared/i18n');
 const { createUpdater } = require('./updater');
 
 const isMac = process.platform === 'darwin';
-const home = app.getPath('home');
+
+// Development overrides (ignored in packaged builds): run against a demo home and an isolated
+// config/localStorage, e.g. for screenshots or manual tests, without touching the real settings.
+const devEnv = (name) => (!app.isPackaged && process.env[name]) || null;
+if (devEnv('SKILLS_BOOK_USER_DATA')) app.setPath('userData', path.resolve(devEnv('SKILLS_BOOK_USER_DATA')));
+const home = devEnv('SKILLS_BOOK_HOME') ? path.resolve(devEnv('SKILLS_BOOK_HOME')) : app.getPath('home');
 
 let win = null;
 let dirty = false;
@@ -15,13 +20,13 @@ let updater = null;
 const CONFIG_VERSION = 2;
 let config = { version: CONFIG_VERSION, lang: I18n.DEFAULT, roots: [] };
 const tr = (key, params) => I18n.t(config.lang, key, params);
-/** id (chemin réel) -> { file, shown, eol } — seuls ces fichiers sont lisibles/modifiables via IPC. */
+/** id (real path) -> { file, shown, eol }: only these files can be read or written through IPC. */
 const registry = new Map();
 
 /* ---------- Config ---------- */
 
 const configFile = () => path.join(app.getPath('userData'), 'config.json');
-/** Config de l'ancien nom de l'app (« Skills Manager »), reprise au premier lancement. */
+/** Config saved under the app's former name ("Skills Manager"), migrated on first launch. */
 const legacyConfigFile = () => path.join(app.getPath('appData'), 'Skills Manager', 'config.json');
 
 const readJsonFile = async (file) => {
@@ -38,7 +43,7 @@ async function loadConfig() {
     return;
   }
   config.roots = raw.roots.filter((r) => typeof r === 'string');
-  // v1 → v2 : ajout des nouveaux dossiers par défaut (ex. ~/.claude/agents)
+  // v1 → v2: add the new default folders (e.g. ~/.claude/agents)
   if ((raw.version || 1) < CONFIG_VERSION) {
     for (const r of defaultRoots(home)) if (!config.roots.includes(r)) config.roots.push(r);
   }
@@ -156,7 +161,7 @@ ipcMain.on('app:close-now', () => {
   win?.close();
 });
 
-/* ---------- Fenêtre ---------- */
+/* ---------- Window ---------- */
 
 function createWindow() {
   win = new BrowserWindow({
@@ -166,7 +171,7 @@ function createWindow() {
     minHeight: 520,
     title: 'Skills Book',
     show: false,
-    // Fond opaque : la vibrancy macOS reprenait la teinte des fenêtres derrière et donnait une sidebar grisée.
+    // Opaque background: macOS vibrancy picked up the windows behind and made the sidebar look disabled.
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1c1c1e' : '#ffffff',
     ...(isMac
       ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 16, y: 16 } }
@@ -183,7 +188,7 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   win.once('ready-to-show', () => win.show());
 
-  // Liens du preview : jamais de navigation dans la fenêtre, http(s) dans le navigateur.
+  // Preview links: never navigate the window, open http(s) in the browser.
   const openExternal = (url) => { if (/^https?:\/\//i.test(url)) shell.openExternal(url); };
   win.webContents.setWindowOpenHandler(({ url }) => { openExternal(url); return { action: 'deny' }; });
   win.webContents.on('will-navigate', (e, url) => {
@@ -207,7 +212,7 @@ function createWindow() {
 
   win.on('closed', () => {
     win = null;
-    // Fermeture retardée par « Enregistrer » : on termine la sortie pour installer la mise à jour.
+    // Close delayed by "Save": finish quitting so the pending update gets installed.
     if (updater?.hasPending()) setImmediate(() => app.quit());
   });
 }

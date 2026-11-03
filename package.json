@@ -1,8 +1,8 @@
 {
   "name": "skills-book",
   "productName": "Skills Book",
-  "version": "0.3.0",
-  "description": "Liste et édite les skills (SKILL.md) présentes sur la machine",
+  "version": "0.3.1",
+  "description": "Browse and edit the Claude skills and agents on your machine",
   "main": "src/main.js",
   "license": "MIT",
   "repository": {

@@ -63,13 +63,13 @@ button { font: inherit; color: inherit; }
 .app {
   display: grid;
   grid-template-columns: var(--sidebar-w) 1px minmax(0, 1fr);
-  /* Ligne bornée à la fenêtre : sans ça, la ligne grandit avec la liste et rien ne défile. */
+  /* Row bounded to the window: otherwise it grows with the list and nothing scrolls. */
   grid-template-rows: minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
 }
 
-/* ---------- Boutons ---------- */
+/* ---------- Buttons ---------- */
 
 .icon-btn {
   display: inline-grid;
@@ -117,7 +117,7 @@ button { font: inherit; color: inherit; }
   position: relative;
 }
 
-/* En-tête fixe (onglets, filtre, portées) : seul .list défile. */
+/* Fixed header (tabs, filter, scopes): only .list scrolls. */
 .sidebar-top {
   flex: none;
   padding: 10px 10px 8px;
@@ -160,7 +160,7 @@ button { font: inherit; color: inherit; }
 }
 .list.busy { opacity: 0.5; }
 
-/* Onglets Skills / Agents */
+/* Skills / Agents tabs */
 .tabs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -187,7 +187,7 @@ button { font: inherit; color: inherit; }
 .tab.active { background: var(--bg-elev); color: var(--fg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 0.5px var(--border); }
 .tab-n { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
 
-/* Filtre de portée */
+/* Scope filter */
 .scopes { display: flex; gap: 4px; margin-top: 8px; }
 .chip {
   height: 22px;
@@ -202,7 +202,7 @@ button { font: inherit; color: inherit; }
 .chip:hover { color: var(--fg); background: var(--hover); }
 .chip.active { background: var(--fg); border-color: transparent; color: var(--bg); }
 
-/* Pastilles de portée */
+/* Scope pills */
 .pill {
   flex: none;
   display: inline-block;
@@ -224,7 +224,7 @@ button { font: inherit; color: inherit; }
   .pill-local { --pill-fg: #4cc77f; }
 }
 
-/* En-têtes de groupe (repliables) */
+/* Group headers (collapsible) */
 .group {
   display: flex;
   align-items: center;
@@ -328,7 +328,7 @@ button { font: inherit; color: inherit; }
 .lang:focus-within { box-shadow: 0 0 0 2px var(--accent); }
 .count { flex: 1; padding-left: 6px; color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
 
-/* Panneau des dossiers */
+/* Scanned folders panel */
 .roots {
   position: absolute;
   left: 8px;
@@ -356,12 +356,12 @@ button { font: inherit; color: inherit; }
 .badge { flex: none; font-size: 10px; padding: 1px 6px; border-radius: 99px; background: var(--hover); color: var(--faint); }
 .roots-actions { display: flex; gap: 6px; }
 
-/* ---------- Séparateur ---------- */
+/* ---------- Resizer ---------- */
 
 .resizer { position: relative; background: var(--border); cursor: col-resize; z-index: 2; }
 .resizer::after { content: ""; position: absolute; inset: 0 -4px; }
 
-/* ---------- Zone principale ---------- */
+/* ---------- Main area ---------- */
 
 .main {
   display: flex;
@@ -520,7 +520,7 @@ button { font: inherit; color: inherit; }
 .editor-preview-side table td, .editor-preview-side table th { border: 1px solid var(--border); padding: 5px 10px; }
 .editor-preview hr, .editor-preview-side hr { border: 0; border-top: 1px solid var(--border); }
 
-/* Frontmatter rendu dans l'aperçu */
+/* Frontmatter rendered in the preview */
 .fm {
   display: grid;
   grid-template-columns: max-content 1fr;
@@ -564,7 +564,7 @@ button { font: inherit; color: inherit; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast[data-type="error"] { background: var(--danger); color: #fff; }
 
-/* ---------- Mise à jour ---------- */
+/* ---------- Update status ---------- */
 
 .update-status {
   position: fixed;

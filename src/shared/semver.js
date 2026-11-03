@@ -1,15 +1,15 @@
 'use strict';
-/* Versions semver minimales (sans dépendance) : utilisées par l'updater et scripts/check-version.mjs. */
+/* Minimal semver helpers (no dependency), used by the updater and scripts/check-version.mjs. */
 
 const SEMVER = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+[0-9A-Za-z.-]+)?$/;
 
-/** { core: [maj, min, patch], pre: [...] } ou null si invalide. Accepte un préfixe "v". */
+/** { core: [major, minor, patch], pre: [...] }, or null if invalid. Accepts a "v" prefix. */
 function parse(version) {
   const m = SEMVER.exec(String(version).trim());
   return m ? { core: [+m[1], +m[2], +m[3]], pre: m[4] ? m[4].split('.') : [] } : null;
 }
 
-/** Ordre semver (spec §11) : < 0 si a < b, 0 si égal, > 0 si a > b. */
+/** Semver precedence (spec §11): < 0 if a < b, 0 if equal, > 0 if a > b. */
 function compare(a, b) {
   for (let i = 0; i < 3; i++) if (a.core[i] !== b.core[i]) return a.core[i] - b.core[i];
   if (!a.pre.length || !b.pre.length) return b.pre.length - a.pre.length; // 1.0.0 > 1.0.0-beta
@@ -27,7 +27,7 @@ function compare(a, b) {
   return 0;
 }
 
-/** true si `candidate` est strictement plus récente que `current` (false si l'une est invalide). */
+/** true if `candidate` is strictly newer than `current` (false if either is invalid). */
 function isNewer(candidate, current) {
   const a = parse(candidate);
   const b = parse(current);

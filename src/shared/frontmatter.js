@@ -1,5 +1,5 @@
-/* Parseur minimal du frontmatter YAML des SKILL.md (clés de premier niveau).
- * UMD : require() côté main, <script> côté renderer (window.Frontmatter). */
+/* Minimal YAML frontmatter parser for SKILL.md and agent files (top-level keys only).
+ * UMD: require() in main, <script> in the renderer (window.Frontmatter). */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Frontmatter = factory();
@@ -30,7 +30,7 @@
       const key = kv[1];
       const val = (kv[2] || '').trim();
 
-      // Lignes indentées qui suivent (continuation, bloc, mapping imbriqué)
+      // Following indented lines (continuation, block scalar, nested mapping)
       const block = [];
       while (i + 1 < lines.length && (/^\s+\S/.test(lines[i + 1]) || (lines[i + 1].trim() === '' && /^\s+\S/.test(lines[i + 2] || '')))) {
         block.push(lines[++i]);

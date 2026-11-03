@@ -96,6 +96,24 @@ src/
   shared/semver.js        semver parsing/comparison (updater + version check)
   renderer/               UI (HTML/CSS/JS, no bundler)
 test/                     node --test (npm test)
+.claude/                  Claude Code skills and agents for contributors
+AGENTS.md                 contributor and coding-agent guide (CLAUDE.md imports it)
 ```
 
 Security: `contextIsolation`, `sandbox`, no `nodeIntegration`, strict CSP. The main process only allows reading/writing files returned by the latest scan.
+
+## Contributing
+
+Read [AGENTS.md](AGENTS.md) first: architecture, security model, conventions, release process and the contracts that installed apps rely on. Everything in the repo is written in English; UI text goes through `src/shared/i18n.js` (English + French).
+
+With Claude Code, the repo ships project skills and an agent in `.claude/`:
+
+| | Use it to |
+|---|---|
+| `/prepare-pr` | bump the version, run the checks, update docs and open an English PR |
+| `/add-ui-text` | add or change UI text in every language |
+| `/test-update-flow` | test the updater against a mock release feed |
+| `/ui-screenshot` | capture the window with demo data and refresh `docs/screenshot*.png` |
+| `code-reviewer` agent | review the branch against `main` before opening a PR |
+
+`AGENTS.md` is also read by other coding agents; the skills are plain Markdown and their scripts run with Node.
