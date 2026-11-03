@@ -256,5 +256,6 @@
     return typeof v === 'function' ? v(params) : v.replace(/\{(\w+)\}/g, (_, k) => params[k] ?? '');
   }
 
-  return { LANGS, DEFAULT, normalize, t };
+  // `dict` is exported for tests (key parity, placeholders); use t() everywhere else.
+  return { LANGS, DEFAULT, normalize, t, dict };
 });

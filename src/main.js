@@ -7,7 +7,12 @@ const I18n = require('./shared/i18n');
 const { createUpdater } = require('./updater');
 
 const isMac = process.platform === 'darwin';
-const home = app.getPath('home');
+
+// Development overrides (ignored in packaged builds): run against a demo home and an isolated
+// config/localStorage, e.g. for screenshots or manual tests, without touching the real settings.
+const devEnv = (name) => (!app.isPackaged && process.env[name]) || null;
+if (devEnv('SKILLS_BOOK_USER_DATA')) app.setPath('userData', path.resolve(devEnv('SKILLS_BOOK_USER_DATA')));
+const home = devEnv('SKILLS_BOOK_HOME') ? path.resolve(devEnv('SKILLS_BOOK_HOME')) : app.getPath('home');
 
 let win = null;
 let dirty = false;
