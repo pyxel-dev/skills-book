@@ -545,10 +545,36 @@
     els.reveal.title = revealLabel();
     renderList();
     renderRoots();
+    renderUpdate();
     if (state.current) renderHeader();
   }
 
   langSelect.addEventListener('change', async () => applyLang(await api.setLang(langSelect.value)));
+
+  /* ---------- Mise à jour (statut envoyé par le main) ---------- */
+
+  const upd = { box: $('update-status'), text: $('update-text'), fill: $('update-fill') };
+  let updateState = { state: 'idle' };
+
+  function renderUpdate() {
+    const s = updateState;
+    const visible = s.state === 'downloading' || s.state === 'installing';
+    upd.box.hidden = !visible;
+    if (!visible) return;
+    const installing = s.state === 'installing';
+    upd.box.classList.toggle('indeterminate', installing);
+    upd.text.textContent = installing
+      ? t('update.installing', { version: s.version })
+      : t('update.downloading', { version: s.version, percent: s.percent ?? 0 });
+    upd.fill.style.width = installing ? '' : `${s.percent ?? 0}%`;
+  }
+
+  api.onUpdateStatus((s) => {
+    updateState = s || { state: 'idle' };
+    renderUpdate();
+    if (s?.state === 'deferred') toast(t('update.deferred'));
+    if (s?.state === 'error') toast(t('update.failed', { error: s.message }), 'error');
+  });
 
   /* ---------- Démarrage ---------- */
 

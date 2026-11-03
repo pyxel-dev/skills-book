@@ -1,7 +1,7 @@
 {
   "name": "skills-book",
   "productName": "Skills Book",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Liste et édite les skills (SKILL.md) présentes sur la machine",
   "main": "src/main.js",
   "license": "MIT",
@@ -11,6 +11,7 @@
   },
   "scripts": {
     "start": "electron .",
+    "test": "node --test \"test/**/*.test.js\"",
     "dist:mac": "electron-builder --mac",
     "dist:win": "electron-builder --win"
   },

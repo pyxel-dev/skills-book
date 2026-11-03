@@ -4,12 +4,14 @@ const path = require('node:path');
 const fs = require('node:fs/promises');
 const { scanSkills, defaultRoots, isDir } = require('./scanner');
 const I18n = require('./shared/i18n');
+const { createUpdater } = require('./updater');
 
 const isMac = process.platform === 'darwin';
 const home = app.getPath('home');
 
 let win = null;
 let dirty = false;
+let updater = null;
 const CONFIG_VERSION = 2;
 let config = { version: CONFIG_VERSION, lang: I18n.DEFAULT, roots: [] };
 const tr = (key, params) => I18n.t(config.lang, key, params);
@@ -200,15 +202,36 @@ function createWindow() {
     });
     if (response === 0) win.webContents.send('app:save-then-close');
     else if (response === 1) { dirty = false; win.close(); }
+    else updater?.quitCancelled();
   });
 
-  win.on('closed', () => { win = null; });
+  win.on('closed', () => {
+    win = null;
+    // Fermeture retardée par « Enregistrer » : on termine la sortie pour installer la mise à jour.
+    if (updater?.hasPending()) setImmediate(() => app.quit());
+  });
 }
 
 function buildMenu() {
   const send = (channel) => () => win?.webContents.send(channel);
+  const name = app.name;
+  const checkUpdates = { id: 'check-updates', label: tr('menu.checkUpdates'), click: () => updater?.check({ interactive: true }) };
   Menu.setApplicationMenu(Menu.buildFromTemplate([
-    ...(isMac ? [{ role: 'appMenu' }] : []),
+    ...(isMac ? [{
+      label: name,
+      submenu: [
+        { role: 'about', label: tr('menu.about', { name }) },
+        checkUpdates,
+        { type: 'separator' },
+        { role: 'services', label: tr('menu.services') },
+        { type: 'separator' },
+        { role: 'hide', label: tr('menu.hide', { name }) },
+        { role: 'hideOthers', label: tr('menu.hideOthers') },
+        { role: 'unhide', label: tr('menu.showAll') },
+        { type: 'separator' },
+        { role: 'quit', label: tr('menu.quitApp', { name }) },
+      ],
+    }] : []),
     {
       label: tr('menu.file'),
       submenu: [
@@ -254,13 +277,21 @@ function buildMenu() {
         { role: 'close', label: tr('menu.closeWindow') },
       ],
     },
+    ...(isMac ? [] : [{ label: tr('menu.help'), submenu: [checkUpdates] }]),
   ]));
 }
 
 app.whenReady().then(async () => {
   await loadConfig();
+  updater = createUpdater({
+    getWindow: () => win,
+    tr,
+    send: (s) => { if (win && !win.isDestroyed()) win.webContents.send('update:status', s); },
+  });
+  updater.cleanup();
   buildMenu();
   createWindow();
+  win.once('ready-to-show', () => updater.scheduleLaunchCheck());
   app.on('activate', () => { if (!BrowserWindow.getAllWindows().length) createWindow(); });
 });
 
