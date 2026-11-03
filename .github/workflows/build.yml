@@ -8,9 +8,7 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
+# Pas de concurrency/cancel-in-progress : chaque merge porte sa propre version et doit produire sa release.
 
 jobs:
   build:
@@ -57,3 +55,47 @@ jobs:
           path: ${{ matrix.files }}
           if-no-files-found: error
           retention-days: 30
+
+  release:
+    name: Release
+    needs: build
+    # Release uniquement sur merge/push dans main ; un lancement manuel ne fait que builder.
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Read version
+        id: version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: release
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Release $TAG already exists. Bump the version in package.json."
+            exit 1
+          fi
+          flags=()
+          [[ "$VERSION" == *-* ]] && flags+=(--prerelease)
+          ls -la release
+          gh release create "$TAG" release/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Skills Book $VERSION" \
+            --generate-notes \
+            "${flags[@]}"

@@ -25,15 +25,25 @@ Output goes to `dist/`. Builds are not signed with a developer certificate (ad-h
 
 ## Downloads
 
-Every push to `main` builds the app with GitHub Actions ([`build.yml`](.github/workflows/build.yml)); it can also be started by hand from the Actions tab. Open the latest [Build run](https://github.com/pyxel-dev/skills-book/actions/workflows/build.yml) and download its artifacts (kept 30 days):
+Get the installers from the [latest release](https://github.com/pyxel-dev/skills-book/releases/latest):
 
-- `skills-book-macos-<sha>`: `.dmg` for Apple Silicon (`-arm64`) and Intel
-- `skills-book-windows-<sha>`: NSIS installer (x64 + arm64)
+- `skills-book-<version>-mac-arm64.dmg` (Apple Silicon) and `skills-book-<version>-mac-x64.dmg` (Intel)
+- `skills-book-<version>-win-setup.exe`: NSIS installer (x64 + arm64)
 
 Since the builds are unsigned:
 
 - **macOS**: after copying the app to Applications, run `xattr -cr "/Applications/Skills Book.app"` once, otherwise macOS reports it as damaged.
 - **Windows**: SmartScreen shows a warning; choose *More info* → *Run anyway*.
+
+## Releasing
+
+Every pull request to `main` must bump `version` in `package.json`: the required **Version bump** check ([`version-check.yml`](.github/workflows/version-check.yml)) fails if the version is not greater than the one on `main`, if `package-lock.json` is out of sync, or if the tag already exists.
+
+```bash
+npm version patch --no-git-tag-version   # or minor / major
+```
+
+Merging the pull request runs [`build.yml`](.github/workflows/build.yml): it builds macOS and Windows, then publishes the GitHub release `v<version>` with the installers and auto-generated notes. Versions with a pre-release suffix (`1.2.0-beta.1`) are published as pre-releases. Running the workflow by hand from the Actions tab only builds (artifacts kept 30 days), without a release.
 
 ## How it works
 

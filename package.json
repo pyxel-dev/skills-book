@@ -1,7 +1,7 @@
 {
   "name": "skills-book",
   "productName": "Skills Book",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Liste et édite les skills (SKILL.md) présentes sur la machine",
   "main": "src/main.js",
   "license": "MIT",
@@ -33,7 +33,8 @@
         }
       ],
       "identity": "-",
-      "hardenedRuntime": false
+      "hardenedRuntime": false,
+      "artifactName": "${name}-${version}-mac-${arch}.${ext}"
     },
     "win": {
       "target": [
@@ -48,7 +49,8 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${name}-${version}-win-setup.${ext}"
     }
   },
   "dependencies": {
