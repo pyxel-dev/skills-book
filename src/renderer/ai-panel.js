@@ -145,7 +145,8 @@ window.AiPanel = (() => {
       if (reply === null) {
         // Never resent: strict local chat templates reject two user turns in a row, and a stopped request stays stopped.
         turn.unanswered = true;
-        if (!input.value) input.value = content;
+        // The input is shared by all files: only restore into the conversation the text belongs to.
+        if (!input.value && conversations.get(doc?.id) === conv) input.value = content;
       }
       conv.pending = null;
       render();

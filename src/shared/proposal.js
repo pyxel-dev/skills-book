@@ -5,9 +5,9 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  // A tag counts only alone on its line: prose and the file itself may mention it.
+  // The opening tag must stand alone on its line and the closing tag must end one: prose and the file itself may mention them.
   const OPEN = /^<proposed_file>[ \t]*$/m;
-  const CLOSE = /^<\/proposed_file>[ \t]*$/gm;
+  const CLOSE = /<\/proposed_file>[ \t]*$/gm;
   // Above this LCS table size, a change is shown as one block so that the window cannot freeze.
   const MAX_CELLS = 4000000;
 

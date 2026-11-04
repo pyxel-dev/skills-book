@@ -33,6 +33,10 @@ test('extract: a closing tag alone in the file stays intact', () => {
   assert.equal(extract('<proposed_file>\nA\n</proposed_file>\nB\n</proposed_file>').proposal, 'A\n</proposed_file>\nB');
 });
 
+test('extract: a closing tag at the end of the last line still closes the block', () => {
+  assert.deepEqual(extract('<proposed_file>\nA\nB</proposed_file>'), { status: 'complete', before: '', proposal: 'A\nB', after: '' });
+});
+
 test('extract: a reply cut off before the closing tag is unclosed', () => {
   assert.deepEqual(extract('Intro\n<proposed_file>\npartial'), { status: 'unclosed', before: 'Intro', proposal: '', after: '' });
 });

@@ -106,7 +106,7 @@ Each request contains a system prompt with the current editor text (unsaved chan
 
 The full file is preferred over patches because these files are short and local models produce unreliable patches.
 
-`Proposal.extract(reply)` returns `{ status, before, proposal, after }`, with status `none`, `complete` or `unclosed`. A tag counts only alone on its line, so prose and the file may mention it. It uses the first opening tag and the last closing tag, so a file containing a closing tag stays intact. `Proposal.matchEnding` restores the final newline that the tag format removes.
+`Proposal.extract(reply)` returns `{ status, before, proposal, after }`, with status `none`, `complete` or `unclosed`. The opening tag must stand alone on its line and the closing tag must end one, so prose and the file may mention them. It uses the first opening tag and the last closing tag, so a file containing a closing tag stays intact. `Proposal.matchEnding` restores the final newline that the tag format removes.
 
 `Proposal.diffLines(a, b)` trims the common prefix and suffix, then runs an LCS on the middle. Above 4,000,000 table cells, the middle is shown as one removal and one addition, so that the window cannot freeze. `Proposal.compact(ops)` keeps two context lines around changes and marks the gaps.
 
@@ -130,7 +130,7 @@ Replies are displayed with `textContent` and `white-space: pre-wrap`. A `SKILL.m
 - Without a key for Anthropic or OpenAI, the log shows a button to Settings.
 - Enter sends, except during IME composition, and Shift+Enter adds a line. A Stop button replaces Send while a request is running.
 
-Conversations live in a `Map` keyed by document id and are lost on quit. Each has at most one request in flight. Switching files does not cancel it, and its reply goes to the conversation it belongs to. A message that fails or is stopped stays visible and returns to the input, but is not resent, because strict local chat templates reject two user turns in a row.
+Conversations live in a `Map` keyed by document id and are lost on quit. Each has at most one request in flight. Switching files does not cancel it, and its reply goes to the conversation it belongs to. A message that fails or is stopped stays visible and returns to the input if its conversation is still on screen, but is not resent, because strict local chat templates reject two user turns in a row.
 
 ### Settings view
 
