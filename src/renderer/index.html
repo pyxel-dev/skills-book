@@ -66,6 +66,7 @@
         <div class="doc-actions no-drag">
           <button class="icon-btn" id="btn-reveal" data-icon="folder"></button>
           <button class="icon-btn" id="btn-open" data-i18n-title="action.openExternal" data-icon="external"></button>
+          <button class="icon-btn" id="btn-ai" data-i18n-title="ai.toggle" data-icon="sparkles"></button>
           <button class="btn primary" id="btn-save" data-i18n="action.save" disabled></button>
         </div>
       </header>
@@ -81,6 +82,21 @@
         <textarea id="editor"></textarea>
       </div>
     </main>
+
+    <aside class="ai-panel" id="ai-panel" hidden>
+      <header class="ai-head drag">
+        <select class="no-drag" id="ai-provider"></select>
+        <input id="ai-model" list="ai-models" data-i18n-placeholder="ai.model" spellcheck="false" autocomplete="off">
+        <datalist id="ai-models"></datalist>
+        <button class="icon-btn" id="ai-clear" data-i18n-title="ai.clear" data-icon="plus"></button>
+        <button class="icon-btn" id="ai-close" data-i18n-title="action.close" data-icon="x"></button>
+      </header>
+      <div class="ai-log" id="ai-log"></div>
+      <form class="ai-form" id="ai-form">
+        <textarea id="ai-text" rows="3" data-i18n-placeholder="ai.placeholder" spellcheck="false"></textarea>
+        <button class="btn primary" id="ai-send" type="submit"></button>
+      </form>
+    </aside>
 
     <section class="settings" id="settings" hidden>
       <header class="settings-head drag">
@@ -140,8 +156,10 @@
   <script src="../../node_modules/easymde/dist/easymde.min.js"></script>
   <script src="../shared/frontmatter.js"></script>
   <script src="../shared/i18n.js"></script>
+  <script src="../shared/proposal.js"></script>
   <script src="icons.js"></script>
   <script src="settings-view.js"></script>
+  <script src="ai-panel.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

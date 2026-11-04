@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const { api, Icons, Frontmatter, EasyMDE, I18n, SettingsView } = window;
+  const { api, Icons, Frontmatter, EasyMDE, I18n, SettingsView, AiPanel, Proposal } = window;
   const $ = (id) => document.getElementById(id);
 
   document.documentElement.classList.add(`platform-${api.platform}`);
@@ -213,6 +213,7 @@
     showDoc(true);
     markActive();
     try { localStorage.setItem('last', id); } catch {}
+    aiPanel.setDocument(skill);
   }
 
   async function reloadCurrent() {
@@ -231,6 +232,7 @@
 
   function closeDoc() {
     state.current = null;
+    aiPanel.setDocument(null);
     setEditorValue('');
     setDirty(false);
     showDoc(false);
@@ -549,6 +551,7 @@
     renderUpdate();
     if (state.current) renderHeader();
     settings.applyLang();
+    aiPanel.applyLang();
   }
 
   langSelect.addEventListener('change', async () => applyLang(await api.setLang(langSelect.value)));
@@ -578,9 +581,21 @@
     if (s?.state === 'error') toast(t('update.failed', { error: s.message }), 'error');
   });
 
-  /* ---------- Settings ---------- */
+  /* ---------- Settings and AI panel ---------- */
 
-  const settings = SettingsView.init({ api, t, toast, errMsg, onChange: () => {} });
+  const aiPanel = AiPanel.init({
+    api,
+    Proposal,
+    t,
+    toast,
+    errMsg,
+    getText: () => mde.value(),
+    // Not setEditorValue(): it clears the undo history. The change handler marks the document as unsaved.
+    applyText: (text) => mde.value(text),
+    onLayout: () => cm.refresh(),
+    openSettings: () => settings.open(),
+  });
+  const settings = SettingsView.init({ api, t, toast, errMsg, onChange: (next) => aiPanel.refresh(next) });
 
   /* ---------- Startup ---------- */
 

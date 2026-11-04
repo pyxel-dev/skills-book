@@ -1,6 +1,7 @@
 :root {
   color-scheme: light dark;
   --sidebar-w: 300px;
+  --ai-w: 340px;
 
   --bg: #ffffff;
   --bg-side: #f4f4f5;
@@ -15,6 +16,7 @@
   --active: color-mix(in srgb, var(--accent) 14%, transparent);
   --code-bg: rgba(0, 0, 0, 0.045);
   --danger: #d70015;
+  --added: #1a7f37;
   --shadow: 0 8px 28px rgba(0, 0, 0, 0.14), 0 0 0 1px var(--border);
 
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
@@ -35,6 +37,7 @@
     --active: color-mix(in srgb, var(--accent) 24%, transparent);
     --code-bg: rgba(255, 255, 255, 0.07);
     --danger: #ff6961;
+    --added: #3fb950;
     --shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
   }
 }
@@ -332,6 +335,62 @@ button { font: inherit; color: inherit; }
 .roots-actions { display: flex; gap: 6px; }
 
 /* ---------- Resizer ---------- */
+
+/* ---------- AI panel ---------- */
+
+.app.ai-open { grid-template-columns: var(--sidebar-w) 1px minmax(0, 1fr) var(--ai-w); }
+.ai-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+}
+.ai-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.ai-head select,
+.ai-head input,
+.ai-form textarea {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elev);
+  color: var(--fg);
+  font: inherit;
+}
+.ai-head select,
+.ai-head input { height: 28px; min-width: 0; padding: 0 6px; font-size: 12px; }
+.ai-head select { flex: none; width: 96px; }
+.ai-head input { flex: 1; }
+.ai-log { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px; }
+.ai-msg { flex: none; padding: 8px 10px; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; }
+.ai-user { align-self: flex-end; max-width: 90%; background: var(--active); }
+.ai-error { color: var(--danger); }
+.ai-note { flex: none; color: var(--muted); font-size: 12px; }
+.ai-setup { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; color: var(--muted); }
+.ai-card { flex: none; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.ai-diff { max-height: 320px; overflow: auto; padding: 6px 0; font: 12px/1.5 var(--mono); user-select: text; }
+.ai-line { padding: 0 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ai-equal { color: var(--muted); }
+.ai-gap { color: var(--faint); }
+.ai-add { background: color-mix(in srgb, var(--added) 18%, transparent); }
+.ai-remove { background: color-mix(in srgb, var(--danger) 16%, transparent); }
+.ai-add::before { content: "+ "; }
+.ai-remove::before { content: "- "; }
+.ai-card-foot { display: flex; align-items: center; gap: 6px; padding: 8px; border-top: 1px solid var(--border); }
+.ai-form { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; padding: 8px; border-top: 1px solid var(--border); }
+.ai-form textarea { width: 100%; padding: 6px 8px; resize: none; }
+
+/* The 820 px minimum window width would leave almost no room for the text next to the panel. */
+@media (max-width: 1039px) {
+  .app.ai-open { grid-template-columns: var(--sidebar-w) 1px minmax(0, 1fr); }
+  .ai-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 5; width: var(--ai-w); box-shadow: var(--shadow); }
+}
 
 /* ---------- Settings ---------- */
 
