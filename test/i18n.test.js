@@ -60,6 +60,11 @@ test('every key used in the sources exists', () => {
   for (const scope of ['global', 'local', 'other']) add(`scope.${scope}.title`, 'src/renderer/app.js');
   for (const kind of ['skill', 'agent']) { add(`kind.${kind}`, 'src/renderer/app.js'); add(`count.${kind}`, 'src/renderer/app.js'); }
   for (const p of ['darwin', 'win32', 'other']) add(`action.reveal.${p}`, 'src/renderer/app.js');
+  for (const code of ['no_key', 'no_model', 'auth', 'unreachable', 'failed', 'bad_reply', 'key_unreadable', 'invalid_url', 'encryption_unavailable']) add(`ai.err.${code}`, 'src/ai.js');
+  for (const id of ['anthropic', 'openai', 'local']) add(`ai.provider.${id}`, 'src/renderer/ai-panel.js');
+  for (const outcome of ['applied', 'ignored']) add(`ai.${outcome}`, 'src/renderer/ai-panel.js');
+  for (const key of ['settings.key.placeholder', 'settings.key.saved', 'settings.key.optional']) add(key, 'src/renderer/settings-view.js');
+  for (const key of ['ai.send', 'ai.stop']) add(key, 'src/renderer/ai-panel.js');
 
   const unknown = [...used].filter(([key]) => !(key in base)).map(([key, file]) => `${key} (${file})`);
   assert.deepEqual(unknown, []);

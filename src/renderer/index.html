@@ -44,10 +44,7 @@
 
       <footer class="sidebar-foot">
         <span class="count" id="count"></span>
-        <label class="lang" data-i18n-title="lang.label">
-          <span data-icon="globe" data-size="14"></span>
-          <select id="lang"></select>
-        </label>
+        <button class="icon-btn" id="btn-settings" data-i18n-title="settings.title" data-icon="settings"></button>
         <button class="icon-btn" id="btn-roots" data-i18n-title="roots.title" data-icon="folders"></button>
         <button class="icon-btn" id="btn-rescan" data-i18n-title="action.rescan" data-icon="refresh"></button>
       </footer>
@@ -69,6 +66,7 @@
         <div class="doc-actions no-drag">
           <button class="icon-btn" id="btn-reveal" data-icon="folder"></button>
           <button class="icon-btn" id="btn-open" data-i18n-title="action.openExternal" data-icon="external"></button>
+          <button class="icon-btn" id="btn-ai" data-i18n-title="ai.toggle" data-icon="sparkles"></button>
           <button class="btn primary" id="btn-save" data-i18n="action.save" disabled></button>
         </div>
       </header>
@@ -84,6 +82,66 @@
         <textarea id="editor"></textarea>
       </div>
     </main>
+
+    <aside class="ai-panel" id="ai-panel" hidden>
+      <header class="ai-head drag">
+        <select class="no-drag" id="ai-provider"></select>
+        <input id="ai-model" list="ai-models" data-i18n-placeholder="ai.model" spellcheck="false" autocomplete="off">
+        <datalist id="ai-models"></datalist>
+        <button class="icon-btn" id="ai-clear" data-i18n-title="ai.clear" data-icon="plus"></button>
+        <button class="icon-btn" id="ai-close" data-i18n-title="action.close" data-icon="x"></button>
+      </header>
+      <div class="ai-log" id="ai-log"></div>
+      <form class="ai-form" id="ai-form">
+        <textarea id="ai-text" rows="3" data-i18n-placeholder="ai.placeholder" spellcheck="false"></textarea>
+        <button class="btn primary" id="ai-send" type="submit"></button>
+      </form>
+    </aside>
+
+    <section class="settings" id="settings" hidden>
+      <header class="settings-head drag">
+        <h1 data-i18n="settings.title"></h1>
+        <button class="icon-btn" id="settings-close" data-i18n-title="action.close" data-icon="x"></button>
+      </header>
+      <div class="settings-body">
+        <label class="settings-row">
+          <span data-i18n="lang.label"></span>
+          <select id="lang"></select>
+        </label>
+
+        <h2 data-i18n="settings.ai"></h2>
+        <p class="settings-note" data-i18n="settings.privacy"></p>
+
+        <form class="settings-row" data-key="anthropic">
+          <span data-i18n="ai.provider.anthropic"></span>
+          <input type="password" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+          <button class="btn ghost" type="button" data-i18n="settings.key.delete"></button>
+        </form>
+
+        <form class="settings-row" data-key="openai">
+          <span data-i18n="ai.provider.openai"></span>
+          <input type="password" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+          <button class="btn ghost" type="button" data-i18n="settings.key.delete"></button>
+        </form>
+
+        <form class="settings-row" id="settings-url-form">
+          <span data-i18n="settings.local.url"></span>
+          <input id="settings-url" type="text" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+        </form>
+
+        <form class="settings-row" data-key="local">
+          <span data-i18n="ai.provider.local"></span>
+          <input type="password" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+          <button class="btn ghost" type="button" data-i18n="settings.key.delete"></button>
+        </form>
+        <p class="settings-note" data-i18n="settings.local.hint"></p>
+        <p class="settings-note settings-note-mac" data-i18n="settings.local.hintApple"></p>
+      </div>
+    </section>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -99,7 +157,10 @@
   <script src="../../node_modules/easymde/dist/easymde.min.js"></script>
   <script src="../shared/frontmatter.js"></script>
   <script src="../shared/i18n.js"></script>
+  <script src="../shared/proposal.js"></script>
   <script src="icons.js"></script>
+  <script src="settings-view.js"></script>
+  <script src="ai-panel.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

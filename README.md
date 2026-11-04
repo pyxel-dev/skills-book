@@ -66,7 +66,8 @@ Merging the pull request runs [`build.yml`](.github/workflows/build.yml): it bui
   Collapsible groups by source (config, plugin, project), with an All / Global / Local filter.
 - **Scanned folders** (button at the bottom of the sidebar): by default `~/.claude/skills`, `~/.claude/agents`, `~/.claude/plugins`, `~/.agents/skills`, `~/.codex/skills`. Add `~/dev` (or similar) to see the local skills/agents of your projects. Config is stored in `userData/config.json`.
 - Recursive scan (depth 9), skips `node_modules`, `.git`, `dist`, `build`, etc. In `~/.claude/plugins`, only what is actually loaded is listed (`cache/`, `synced/`), not the `marketplaces/` catalog or orphaned versions (`.orphaned_at`). Symlinks are followed and duplicates merged.
-- **Language**: picker at the bottom of the sidebar (English by default, French). Covers the UI, native dialogs and menus; the choice is saved in `config.json`.
+- **Language**: picker in Settings, opened with the gear button at the bottom of the sidebar (English by default, French). Covers the UI, native dialogs and menus; the choice is saved in `config.json`.
+- **AI assistant** (sparkles button above the editor): chat about the open file with Anthropic, OpenAI or a local OpenAI-compatible server such as Ollama or LM Studio. Keys and the local URL are set in Settings, and keys are encrypted with the system keychain. Proposals appear as a diff, and Apply only changes the editor: you still review and save. The open file and the conversation are sent to the selected provider. On macOS 27, Apple's on-device model works through the Local provider: run `fm serve --port 1976`, then use `http://127.0.0.1:1976/v1` and the model `system`. This is experimental, as its proposals are often unreliable.
 - Name and description come from the frontmatter (`name`, `description`), otherwise from the folder/file name.
 - EasyMDE editor: preview, side by side, frontmatter rendered as a table in the preview.
 - Saving: original line endings are kept (LF/CRLF), external changes are detected (auto-reload when there are no local edits, otherwise a choice between Overwrite / Reload).
@@ -81,6 +82,8 @@ Merging the pull request runs [`build.yml`](.github/workflows/build.yml): it bui
 | `⌘/Ctrl O` | Add a folder |
 | `⌘/Ctrl P` | Preview |
 | `F9` | Side by side |
+| `Enter` | Send a message in the AI panel (`Shift Enter`: new line) |
+| `Esc` | Close Settings |
 
 ## Structure
 
@@ -91,16 +94,19 @@ src/
   scanner.js              finds skills (SKILL.md) and agents
   updater.js              update check, download and install (Electron side)
   update-core.js          GitHub release lookup, asset choice, download + SHA-256, bundle swap
+  ai.js                   AI chat IPC and encrypted key storage (Electron side)
+  ai-core.js              AI provider requests, errors and URL validation
   shared/frontmatter.js   minimal YAML parser (main + renderer)
   shared/i18n.js          translations (main + renderer): adding a language = one entry in LANGS + dict
   shared/semver.js        semver parsing/comparison (updater + version check)
+  shared/proposal.js      AI proposal extraction and line diff (renderer + tests)
   renderer/               UI (HTML/CSS/JS, no bundler)
 test/                     node --test (npm test)
 .claude/                  Claude Code skills and agents for contributors
 AGENTS.md                 contributor and coding-agent guide (CLAUDE.md imports it)
 ```
 
-Security: `contextIsolation`, `sandbox`, no `nodeIntegration`, strict CSP. The main process only allows reading/writing files returned by the latest scan.
+Security: `contextIsolation`, `sandbox`, no `nodeIntegration`, strict CSP. The main process only allows reading/writing files returned by the latest scan. AI requests run in the main process, and the renderer never receives API keys.
 
 ## Contributing
 

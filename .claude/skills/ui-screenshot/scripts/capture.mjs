@@ -47,7 +47,11 @@ async function capture(theme, file) {
     page.on('pageerror', (e) => errors.push(e.message));
     await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setContentSize(1280, 800));
     await page.waitForSelector('.item-main', { timeout: 15000 });
-    if (opts.lang !== 'en') await page.selectOption('#lang', opts.lang);
+    if (opts.lang !== 'en') {
+      await page.click('#btn-settings');
+      await page.selectOption('#lang', opts.lang);
+      await page.click('#settings-close');
+    }
     // Overlay scrollbars are hidden at rest on macOS; Linux/Windows draw classic ones.
     await page.addStyleTag({ content: '::-webkit-scrollbar{width:0;height:0}.CodeMirror-vscrollbar,.CodeMirror-hscrollbar,.CodeMirror-scrollbar-filler{display:none!important}' });
     if (opts.open) {
