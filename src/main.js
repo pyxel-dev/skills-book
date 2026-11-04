@@ -5,6 +5,8 @@ const fs = require('node:fs/promises');
 const { scanSkills, defaultRoots, isDir } = require('./scanner');
 const I18n = require('./shared/i18n');
 const { createUpdater } = require('./updater');
+const { registerAi } = require('./ai');
+const aiCore = require('./ai-core');
 
 const isMac = process.platform === 'darwin';
 
@@ -18,7 +20,7 @@ let win = null;
 let dirty = false;
 let updater = null;
 const CONFIG_VERSION = 2;
-let config = { version: CONFIG_VERSION, lang: I18n.DEFAULT, roots: [] };
+let config = { version: CONFIG_VERSION, lang: I18n.DEFAULT, roots: [], ai: aiCore.normalizeConfig() };
 const tr = (key, params) => I18n.t(config.lang, key, params);
 /** id (real path) -> { file, shown, eol }: only these files can be read or written through IPC. */
 const registry = new Map();
@@ -38,6 +40,7 @@ async function loadConfig() {
   const migrated = !raw && (raw = await readJsonFile(legacyConfigFile())) !== null;
 
   config.lang = I18n.normalize(raw?.lang);
+  config.ai = aiCore.normalizeConfig(raw?.ai);
   if (!raw || !Array.isArray(raw.roots)) {
     config.roots = defaultRoots(home);
     return;
@@ -288,6 +291,7 @@ function buildMenu() {
 
 app.whenReady().then(async () => {
   await loadConfig();
+  registerAi({ getConfig: () => config, saveConfig, tr });
   updater = createUpdater({
     getWindow: () => win,
     tr,

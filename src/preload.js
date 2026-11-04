@@ -20,6 +20,13 @@ contextBridge.exposeInMainWorld('api', {
   getLang: () => ipcRenderer.invoke('i18n:get'),
   setLang: (lang) => ipcRenderer.invoke('i18n:set', lang),
 
+  aiGetSettings: () => ipcRenderer.invoke('ai:settings:get'),
+  aiSetSettings: (patch) => ipcRenderer.invoke('ai:settings:set', patch),
+  aiSetKey: (provider, key) => ipcRenderer.invoke('ai:key:set', provider, key),
+  aiModels: () => ipcRenderer.invoke('ai:models'),
+  aiSend: (requestId, document, messages) => ipcRenderer.invoke('ai:send', requestId, document, messages),
+  aiCancel: (requestId) => ipcRenderer.invoke('ai:cancel', requestId),
+
   confirmUnsaved: (name) => ipcRenderer.invoke('dialog:unsaved', name),
   setDirty: (value) => ipcRenderer.send('state:dirty', value),
   closeNow: () => ipcRenderer.send('app:close-now'),
