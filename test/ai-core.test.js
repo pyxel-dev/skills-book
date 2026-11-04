@@ -84,6 +84,7 @@ test('chat: Anthropic request and reply', async () => {
   assert.equal(body.model, 'm');
   assert.equal(body.max_tokens, 8192);
   assert.match(body.system, /<document>\nDOC\n<\/document>/);
+  assert.match(body.system, /every line of the file/);
   assert.deepEqual(body.messages, chatArgs.messages);
 });
 
@@ -96,6 +97,7 @@ test('chat: OpenAI request and reply', async () => {
   assert.equal(url, 'https://api.openai.com/v1/chat/completions');
   assert.equal(init.headers.Authorization, 'Bearer secret');
   assert.equal(body.max_tokens, undefined);
+  assert.equal(body.stream, false);
   assert.equal(body.messages[0].role, 'system');
   assert.match(body.messages[0].content, /<document>\nDOC\n<\/document>/);
   assert.deepEqual(body.messages.slice(1), chatArgs.messages);
