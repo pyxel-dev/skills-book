@@ -1,0 +1,65 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { extract, matchEnding, diffLines, compact } = require('../src/shared/proposal');
+
+const summary = (ops) => ops.map((op) => `${op.type}:${op.text}`);
+
+test('extract: reply without a proposal', () => {
+  assert.deepEqual(extract(' Just advice. '), { status: 'none', before: 'Just advice.', proposal: '', after: '' });
+});
+
+test('extract: complete proposal with text around it', () => {
+  const reply = 'Here it is.\n<proposed_file>\nline 1\nline 2\n</proposed_file>\nDone.';
+  assert.deepEqual(extract(reply), { status: 'complete', before: 'Here it is.', proposal: 'line 1\nline 2', after: 'Done.' });
+});
+
+test('extract: a file that mentions the tags stays intact', () => {
+  const reply = '<proposed_file>\nUse <proposed_file> and </proposed_file> here\n</proposed_file>';
+  assert.equal(extract(reply).proposal, 'Use <proposed_file> and </proposed_file> here');
+});
+
+test('extract: a reply cut off before the closing tag is unclosed', () => {
+  assert.deepEqual(extract('Intro\n<proposed_file>\npartial'), { status: 'unclosed', before: 'Intro', proposal: '', after: '' });
+});
+
+test('extract: CRLF is converted to LF', () => {
+  assert.equal(extract('<proposed_file>\r\na\r\nb\r\n</proposed_file>').proposal, 'a\nb');
+});
+
+test('matchEnding restores the final newline of the base', () => {
+  assert.equal(matchEnding('a', 'b\n'), 'a\n');
+  assert.equal(matchEnding('a\n', 'b\n'), 'a\n');
+  assert.equal(matchEnding('a', 'b'), 'a');
+});
+
+test('diffLines: identical text has only equal lines', () => {
+  assert.deepEqual(summary(diffLines('a\nb', 'a\nb')), ['equal:a', 'equal:b']);
+});
+
+test('diffLines: replaced line', () => {
+  assert.deepEqual(summary(diffLines('a\nb\nc', 'a\nB\nc')), ['equal:a', 'remove:b', 'add:B', 'equal:c']);
+});
+
+test('diffLines: added and removed lines', () => {
+  assert.deepEqual(summary(diffLines('a\nc', 'a\nb\nc')), ['equal:a', 'add:b', 'equal:c']);
+  assert.deepEqual(summary(diffLines('a\nb\nc', 'a\nc')), ['equal:a', 'remove:b', 'equal:c']);
+});
+
+test('diffLines: finds a common line between two changes', () => {
+  assert.deepEqual(summary(diffLines('x\na\ny', 'z\na\nw')), ['remove:x', 'add:z', 'equal:a', 'remove:y', 'add:w']);
+});
+
+test('diffLines: a very large change falls back to one block', () => {
+  const lines = (prefix) => Array.from({ length: 3000 }, (_, i) => `${prefix}${i}`).join('\n');
+  const ops = diffLines(lines('a'), lines('b'));
+  assert.equal(ops.length, 6000);
+  assert.ok(ops.slice(0, 3000).every((op) => op.type === 'remove'));
+  assert.ok(ops.slice(3000).every((op) => op.type === 'add'));
+});
+
+test('compact keeps context around changes and marks the gaps', () => {
+  const before = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'].join('\n');
+  const after = before.replace('5', 'five');
+  assert.deepEqual(compact(diffLines(before, after)).map((op) => op.text), ['…', '3', '4', '5', 'five', '6', '7', '…']);
+});
