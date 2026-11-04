@@ -41,7 +41,7 @@ src/renderer/            index.html, app.js (UI state, list, editor), ai-panel.j
 scripts/check-version.mjs  version check used by CI
 test/                    node:test suites
 .github/workflows/       build.yml (build + release), version-check.yml, test.yml
-docs/                    README screenshots
+docs/                    README screenshots, design notes and plans (superpowers/)
 ```
 
 The renderer loads scripts with `<script>` tags (UMD globals: `window.api`, `Frontmatter`, `I18n`, `Icons`, `EasyMDE`, `Proposal`, `AiPanel`, `SettingsView`). EasyMDE is loaded from `node_modules/easymde/dist/` by relative path; electron-builder ships it in the asar.
