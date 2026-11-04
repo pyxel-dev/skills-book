@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const { api, Icons, Frontmatter, EasyMDE, I18n } = window;
+  const { api, Icons, Frontmatter, EasyMDE, I18n, SettingsView } = window;
   const $ = (id) => document.getElementById(id);
 
   document.documentElement.classList.add(`platform-${api.platform}`);
@@ -275,6 +275,7 @@
   }
 
   async function select(id) {
+    settings.close();
     if (state.current?.id === id) return;
     if (await resolveUnsaved()) await open(id);
   }
@@ -547,6 +548,7 @@
     renderRoots();
     renderUpdate();
     if (state.current) renderHeader();
+    settings.applyLang();
   }
 
   langSelect.addEventListener('change', async () => applyLang(await api.setLang(langSelect.value)));
@@ -575,6 +577,10 @@
     if (s?.state === 'deferred') toast(t('update.deferred'));
     if (s?.state === 'error') toast(t('update.failed', { error: s.message }), 'error');
   });
+
+  /* ---------- Settings ---------- */
+
+  const settings = SettingsView.init({ api, t, toast, errMsg, onChange: () => {} });
 
   /* ---------- Startup ---------- */
 

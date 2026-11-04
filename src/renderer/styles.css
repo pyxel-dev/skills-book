@@ -301,31 +301,6 @@ button { font: inherit; color: inherit; }
   padding: 6px 8px;
   border-top: 1px solid var(--border);
 }
-.lang {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  height: 28px;
-  padding: 0 4px 0 6px;
-  border-radius: 6px;
-  color: var(--muted);
-  cursor: pointer;
-}
-.lang:hover { background: var(--hover); color: var(--fg); }
-.lang span { display: grid; }
-.lang select {
-  appearance: none;
-  border: 0;
-  outline: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-size: 12px;
-  cursor: pointer;
-}
-.lang select option { color: var(--fg); background: var(--bg-elev); }
-.lang:focus-within { box-shadow: 0 0 0 2px var(--accent); }
 .count { flex: 1; padding-left: 6px; color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
 
 /* Scanned folders panel */
@@ -357,6 +332,47 @@ button { font: inherit; color: inherit; }
 .roots-actions { display: flex; gap: 6px; }
 
 /* ---------- Resizer ---------- */
+
+/* ---------- Settings ---------- */
+
+/* Covers the main area instead of replacing it, so the editor keeps its state underneath. */
+.settings {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: calc(var(--sidebar-w) + 1px);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+.settings-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-head h1 { margin: 0; font-size: 18px; font-weight: 600; }
+.settings-body { flex: 1; min-height: 0; max-width: 640px; overflow: auto; padding: 8px 24px 24px; }
+.settings-body h2 { margin: 24px 0 4px; font-size: 13px; font-weight: 600; }
+.settings-note { margin: 4px 0 8px; color: var(--muted); font-size: 12px; user-select: text; }
+.settings-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+.settings-row > span { flex: none; width: 96px; }
+.settings-row input,
+.settings-row select {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elev);
+  color: var(--fg);
+  font: inherit;
+}
+.settings-row input { flex: 1; min-width: 0; }
+.settings-row select option { color: var(--fg); background: var(--bg-elev); }
 
 .resizer { position: relative; background: var(--border); cursor: col-resize; z-index: 2; }
 .resizer::after { content: ""; position: absolute; inset: 0 -4px; }

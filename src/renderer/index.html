@@ -44,10 +44,7 @@
 
       <footer class="sidebar-foot">
         <span class="count" id="count"></span>
-        <label class="lang" data-i18n-title="lang.label">
-          <span data-icon="globe" data-size="14"></span>
-          <select id="lang"></select>
-        </label>
+        <button class="icon-btn" id="btn-settings" data-i18n-title="settings.title" data-icon="settings"></button>
         <button class="icon-btn" id="btn-roots" data-i18n-title="roots.title" data-icon="folders"></button>
         <button class="icon-btn" id="btn-rescan" data-i18n-title="action.rescan" data-icon="refresh"></button>
       </footer>
@@ -84,6 +81,50 @@
         <textarea id="editor"></textarea>
       </div>
     </main>
+
+    <section class="settings" id="settings" hidden>
+      <header class="settings-head drag">
+        <h1 data-i18n="settings.title"></h1>
+        <button class="icon-btn" id="settings-close" data-i18n-title="action.close" data-icon="x"></button>
+      </header>
+      <div class="settings-body">
+        <label class="settings-row">
+          <span data-i18n="lang.label"></span>
+          <select id="lang"></select>
+        </label>
+
+        <h2 data-i18n="settings.ai"></h2>
+        <p class="settings-note" data-i18n="settings.privacy"></p>
+
+        <form class="settings-row" data-key="anthropic">
+          <span data-i18n="ai.provider.anthropic"></span>
+          <input type="password" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+          <button class="btn ghost" type="button" data-i18n="settings.key.delete"></button>
+        </form>
+
+        <form class="settings-row" data-key="openai">
+          <span data-i18n="ai.provider.openai"></span>
+          <input type="password" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+          <button class="btn ghost" type="button" data-i18n="settings.key.delete"></button>
+        </form>
+
+        <form class="settings-row" id="settings-url-form">
+          <span data-i18n="settings.local.url"></span>
+          <input id="settings-url" type="text" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+        </form>
+
+        <form class="settings-row" data-key="local">
+          <span data-i18n="ai.provider.local"></span>
+          <input type="password" spellcheck="false" autocomplete="off">
+          <button class="btn" type="submit" data-i18n="action.save"></button>
+          <button class="btn ghost" type="button" data-i18n="settings.key.delete"></button>
+        </form>
+        <p class="settings-note" data-i18n="settings.local.hint"></p>
+      </div>
+    </section>
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -100,6 +141,7 @@
   <script src="../shared/frontmatter.js"></script>
   <script src="../shared/i18n.js"></script>
   <script src="icons.js"></script>
+  <script src="settings-view.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
