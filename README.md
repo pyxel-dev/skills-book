@@ -82,6 +82,8 @@ Merging the pull request runs [`build.yml`](.github/workflows/build.yml): it bui
 | `⌘/Ctrl O` | Add a folder |
 | `⌘/Ctrl P` | Preview |
 | `F9` | Side by side |
+| `Enter` | Send a message in the AI panel (`Shift Enter`: new line) |
+| `Esc` | Close Settings |
 
 ## Structure
 

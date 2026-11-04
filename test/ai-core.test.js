@@ -109,10 +109,13 @@ test('chat: local server without a key sends no Authorization header', async () 
 });
 
 test('errors: refused key', async () => {
-  for (const status of [401, 403]) {
-    const { fetch } = fakeFetch(status, { error: { message: 'nope' } });
-    await assert.rejects(core.chat({ ...chatArgs, fetch, provider: 'openai' }), hasCode('auth'));
-  }
+  const { fetch } = fakeFetch(401, { error: { message: 'nope' } });
+  await assert.rejects(core.chat({ ...chatArgs, fetch, provider: 'openai' }), hasCode('auth'));
+});
+
+test('errors: a 403 keeps the provider reason instead of blaming the key', async () => {
+  const { fetch } = fakeFetch(403, { error: { message: 'No access to this model' } });
+  await assert.rejects(core.chat({ ...chatArgs, fetch, provider: 'openai' }), hasCode('failed', 'No access to this model'));
 });
 
 test('errors: provider message is kept, capped and redacted', async () => {
@@ -124,15 +127,28 @@ test('errors: provider message is kept, capped and redacted', async () => {
   await assert.rejects(core.chat({ ...chatArgs, fetch: stringError.fetch, provider: 'local' }), hasCode('failed', 'model not found'));
   const notJson = fakeFetch(502, 'Bad gateway');
   await assert.rejects(core.chat({ ...chatArgs, fetch: notJson.fetch, provider: 'local' }), hasCode('failed', 'Bad gateway'));
+  const noMessage = fakeFetch(500, { error: { type: 'x' } });
+  await assert.rejects(core.chat({ ...chatArgs, fetch: noMessage.fetch, provider: 'local' }), hasCode('failed', '{"error":{"type":"x"}}'));
 });
 
-test('errors: connection failure, invalid JSON, empty reply', async () => {
+test('errors: connection failure', async () => {
   const fetch = async () => { throw new TypeError('fetch failed'); };
   await assert.rejects(core.chat({ ...chatArgs, fetch, provider: 'local' }), hasCode('unreachable'));
-  const html = fakeFetch(200, '<html>');
-  await assert.rejects(core.chat({ ...chatArgs, fetch: html.fetch, provider: 'local' }), hasCode('failed'));
-  const empty = fakeFetch(200, { choices: [{ message: { content: '' } }] });
-  await assert.rejects(core.chat({ ...chatArgs, fetch: empty.fetch, provider: 'local' }), hasCode('failed'));
+});
+
+test('errors: unexpected reply shapes', async () => {
+  const bodies = ['<html>', null, {}, { choices: [{ message: { content: '' } }] }, { choices: [{ message: { content: [{ type: 'text', text: 'x' }] } }] }];
+  for (const body of bodies) {
+    const { fetch } = fakeFetch(200, body);
+    await assert.rejects(core.chat({ ...chatArgs, fetch, provider: 'local' }), hasCode('bad_reply'), JSON.stringify(body));
+  }
+  const anthropic = fakeFetch(200, { content: 'nope' });
+  await assert.rejects(core.chat({ ...chatArgs, fetch: anthropic.fetch, provider: 'anthropic' }), hasCode('bad_reply'));
+});
+
+test('errors: an error returned with HTTP 200 is shown', async () => {
+  const { fetch } = fakeFetch(200, { error: 'Unexpected endpoint' });
+  await assert.rejects(core.chat({ ...chatArgs, fetch, provider: 'local' }), hasCode('failed', 'Unexpected endpoint'));
 });
 
 test('listModels: Anthropic and local', async () => {
@@ -143,4 +159,6 @@ test('listModels: Anthropic and local', async () => {
   const local = fakeFetch(200, { data: [{ id: 'llama' }] });
   assert.deepEqual(await core.listModels({ fetch: local.fetch, provider: 'local', key: '', localUrl: 'http://localhost:1234/v1' }), ['llama']);
   assert.equal(local.calls[0].url, 'http://localhost:1234/v1/models');
+  const odd = fakeFetch(200, { data: 'nope' });
+  assert.deepEqual(await core.listModels({ fetch: odd.fetch, provider: 'local', key: '', localUrl: 'http://localhost:1234/v1' }), []);
 });

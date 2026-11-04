@@ -5,21 +5,24 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const OPEN = '<proposed_file>';
-  const CLOSE = '</proposed_file>';
+  // A tag counts only alone on its line: prose and the file itself may mention it.
+  const OPEN = /^<proposed_file>[ \t]*$/m;
+  const CLOSE = /^<\/proposed_file>[ \t]*$/gm;
   // Above this LCS table size, a change is shown as one block so that the window cannot freeze.
   const MAX_CELLS = 4000000;
 
-  /** First opening tag and last closing tag, so that a file mentioning the tags stays intact. */
+  /** First opening tag and last closing tag, so that a file containing a closing tag stays intact. */
   function extract(reply) {
-    const start = reply.indexOf(OPEN);
-    if (start === -1) return { status: 'none', before: reply.trim(), proposal: '', after: '' };
-    const before = reply.slice(0, start).trim();
-    const body = start + OPEN.length;
-    const end = reply.lastIndexOf(CLOSE);
-    if (end < body) return { status: 'unclosed', before, proposal: '', after: '' };
-    const proposal = reply.slice(body, end).replace(/\r\n/g, '\n').replace(/^\n/, '').replace(/\n$/, '');
-    return { status: 'complete', before, proposal, after: reply.slice(end + CLOSE.length).trim() };
+    const text = reply.replace(/\r\n/g, '\n');
+    const open = OPEN.exec(text);
+    if (!open) return { status: 'none', before: text.trim(), proposal: '', after: '' };
+    const before = text.slice(0, open.index).trim();
+    const body = open.index + open[0].length;
+    const close = [...text.slice(body).matchAll(CLOSE)].at(-1);
+    if (!close) return { status: 'unclosed', before, proposal: '', after: '' };
+    const end = body + close.index;
+    const proposal = text.slice(body, end).replace(/^\n/, '').replace(/\n$/, '');
+    return { status: 'complete', before, proposal, after: text.slice(end + close[0].length).trim() };
   }
 
   /** The tag format loses the file's final newline: without this, every proposal would change it. */

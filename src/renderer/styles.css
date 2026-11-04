@@ -62,6 +62,8 @@ button { font: inherit; color: inherit; }
 
 .platform-darwin .drag { -webkit-app-region: drag; }
 .platform-darwin .no-drag, .platform-darwin .drag button, .platform-darwin .drag input { -webkit-app-region: no-drag; }
+/* Drag regions ignore stacking: whatever covers one must cancel it, or clicks would move the window. */
+.platform-darwin .settings, .platform-darwin .ai-panel { -webkit-app-region: no-drag; }
 
 .app {
   display: grid;
@@ -334,8 +336,6 @@ button { font: inherit; color: inherit; }
 .badge { flex: none; font-size: 10px; padding: 1px 6px; border-radius: 99px; background: var(--hover); color: var(--faint); }
 .roots-actions { display: flex; gap: 6px; }
 
-/* ---------- Resizer ---------- */
-
 /* ---------- AI panel ---------- */
 
 .app.ai-open { grid-template-columns: var(--sidebar-w) 1px minmax(0, 1fr) var(--ai-w); }
@@ -432,6 +432,8 @@ button { font: inherit; color: inherit; }
 }
 .settings-row input { flex: 1; min-width: 0; }
 .settings-row select option { color: var(--fg); background: var(--bg-elev); }
+
+/* ---------- Resizer ---------- */
 
 .resizer { position: relative; background: var(--border); cursor: col-resize; z-index: 2; }
 .resizer::after { content: ""; position: absolute; inset: 0 -4px; }

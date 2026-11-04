@@ -19,6 +19,20 @@ test('extract: a file that mentions the tags stays intact', () => {
   assert.equal(extract(reply).proposal, 'Use <proposed_file> and </proposed_file> here');
 });
 
+test('extract: a tag counts only alone on its line', () => {
+  const reply = 'I will use a <proposed_file> block.\n<proposed_file>\nNEW\n</proposed_file>';
+  assert.deepEqual(extract(reply), { status: 'complete', before: 'I will use a <proposed_file> block.', proposal: 'NEW', after: '' });
+});
+
+test('extract: a plain answer mentioning the tag is not a proposal', () => {
+  const reply = 'Use a <proposed_file> block here, then continue.';
+  assert.deepEqual(extract(reply), { status: 'none', before: reply, proposal: '', after: '' });
+});
+
+test('extract: a closing tag alone in the file stays intact', () => {
+  assert.equal(extract('<proposed_file>\nA\n</proposed_file>\nB\n</proposed_file>').proposal, 'A\n</proposed_file>\nB');
+});
+
 test('extract: a reply cut off before the closing tag is unclosed', () => {
   assert.deepEqual(extract('Intro\n<proposed_file>\npartial'), { status: 'unclosed', before: 'Intro', proposal: '', after: '' });
 });

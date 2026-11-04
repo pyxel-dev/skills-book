@@ -15,12 +15,9 @@ window.SettingsView = (() => {
     function render() {
       if (!settings) return;
       for (const form of keyForms) {
-        const input = form.querySelector('input');
-        input.value = '';
-        input.placeholder = placeholder(form.dataset.key);
+        form.querySelector('input').placeholder = placeholder(form.dataset.key);
         form.querySelector('.ghost').hidden = !settings.hasKey[form.dataset.key];
       }
-      $('settings-url').value = settings.localUrl;
     }
 
     async function update(call) {
@@ -28,28 +25,33 @@ window.SettingsView = (() => {
         settings = await call();
         render();
         onChange(settings);
+        return true;
       } catch (e) {
         toast(errMsg(e), 'error');
+        return false;
       }
     }
 
     for (const form of keyForms) {
       const id = form.dataset.key;
-      form.addEventListener('submit', (e) => {
+      const input = form.querySelector('input');
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const value = form.querySelector('input').value.trim();
-        if (value) update(() => api.aiSetKey(id, value));
+        const value = input.value.trim();
+        if (value && await update(() => api.aiSetKey(id, value))) input.value = '';
       });
       form.querySelector('.ghost').addEventListener('click', () => update(() => api.aiSetKey(id, '')));
     }
 
-    $('settings-url-form').addEventListener('submit', (e) => {
+    $('settings-url-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      update(() => api.aiSetSettings({ localUrl: $('settings-url').value }));
+      if (await update(() => api.aiSetSettings({ localUrl: $('settings-url').value }))) $('settings-url').value = settings.localUrl;
     });
 
     async function open() {
       settings = await api.aiGetSettings();
+      for (const form of keyForms) form.querySelector('input').value = '';
+      $('settings-url').value = settings.localUrl;
       render();
       view.hidden = false;
     }

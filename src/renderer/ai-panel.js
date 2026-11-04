@@ -126,18 +126,25 @@ window.AiPanel = (() => {
       const conv = conversation();
       const base = getText();
       const requestId = String(++nextRequest);
-      conv.messages.push({ role: 'user', content });
+      const turn = { role: 'user', content };
+      conv.messages.push(turn);
       conv.pending = requestId;
       input.value = '';
       render();
       const history = conv.messages
-        .filter((msg) => msg.role !== 'error')
+        .filter((msg) => msg.role !== 'error' && !msg.unanswered)
         .map((msg) => ({ role: msg.role, content: msg.content }));
+      let reply = null;
       try {
-        const reply = await api.aiSend(requestId, base, history);
+        reply = await api.aiSend(requestId, base, history);
         if (reply !== null) conv.messages.push({ role: 'assistant', content: reply, base, outcome: null });
       } catch (e) {
         conv.messages.push({ role: 'error', content: errMsg(e) });
+      }
+      if (reply === null) {
+        // Never resent: strict local chat templates reject two user turns in a row, and a stopped request stays stopped.
+        turn.unanswered = true;
+        if (!input.value) input.value = content;
       }
       conv.pending = null;
       render();
