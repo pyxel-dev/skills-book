@@ -31,17 +31,20 @@ src/preload.js           window.api (contextBridge); EVENTS = allowed main → r
 src/scanner.js           finds skills and agents, classifies scope, plugin info
 src/updater.js           update check / download / install (Electron side)
 src/update-core.js       Electron-free update logic (unit-tested)
+src/ai.js                AI chat IPC handlers and encrypted key storage (Electron side)
+src/ai-core.js           Electron-free AI logic: requests, errors, URL validation (unit-tested)
 src/shared/frontmatter.js  minimal YAML frontmatter parser (UMD: main + renderer)
 src/shared/i18n.js         EN/FR strings (UMD: main + renderer)
 src/shared/semver.js       semver helpers (updater + scripts/check-version.mjs)
-src/renderer/            index.html, app.js (UI state, list, editor), icons.js, styles.css
+src/shared/proposal.js     AI proposal extraction and line diff (UMD: renderer + tests)
+src/renderer/            index.html, app.js (UI state, list, editor), ai-panel.js, settings-view.js, icons.js, styles.css
 scripts/check-version.mjs  version check used by CI
 test/                    node:test suites
 .github/workflows/       build.yml (build + release), version-check.yml, test.yml
 docs/                    README screenshots
 ```
 
-The renderer loads scripts with `<script>` tags (UMD globals: `window.api`, `Frontmatter`, `I18n`, `Icons`, `EasyMDE`). EasyMDE is loaded from `node_modules/easymde/dist/` by relative path; electron-builder ships it in the asar.
+The renderer loads scripts with `<script>` tags (UMD globals: `window.api`, `Frontmatter`, `I18n`, `Icons`, `EasyMDE`, `Proposal`, `AiPanel`, `SettingsView`). EasyMDE is loaded from `node_modules/easymde/dist/` by relative path; electron-builder ships it in the asar.
 
 ## Security model (keep it)
 
@@ -49,13 +52,16 @@ The renderer loads scripts with `<script>` tags (UMD globals: `window.api`, `Fro
 - The renderer never sends file paths. `skills:scan` fills `registry` (id = real path → file); read, write, reveal and open take an **id** and throw if it is not in the last scan. Folder roots are added only through the native folder dialog.
 - New IPC: `ipcMain.handle` in `main.js`, validate every argument, expose a narrow function in `preload.js`. A new main → renderer event must be added to `EVENTS` (or get a dedicated `on…` helper like `onUpdateStatus`).
 - Links in the preview never navigate the window; `http(s)` URLs open in the browser.
+- AI requests run in the main process, so the CSP keeps blocking network access from the renderer. API keys are encrypted with `safeStorage`, never returned to the renderer and never stored in plaintext. Provider, model and URL come from the config, never from `ai:send`. Requests refuse redirects, `http` is accepted only on loopback, and changing the local URL deletes its key.
+- AI replies are displayed with `textContent`, never rendered as Markdown or HTML: an opened file may carry prompt injection, and the CSP's `img-src https:` would let a rendered image leak its content. The model has no tools; it can only propose text, which the user reviews as a diff.
 
 ## How things work
 
 - **Scanner**: walks the configured roots (depth 9), skips `node_modules`, `.git`, build folders and inactive `~/.claude` content. Skill = folder with `SKILL.md` (not descended further). Agent = `.md` with a `name` or `description` in its frontmatter inside an `agents/` folder of `.claude` or of a plugin. Scope: under `~/.claude`, `~/.codex`, `~/.agents`… = global; under `<project>/.claude`… = local; elsewhere = other. In `~/.claude/plugins` only `cache/` and `synced/` are read, and versions marked `.orphaned_at` are skipped.
 - **Saving** keeps the file's line endings (LF/CRLF) and compares the mtime to detect external edits (overwrite / reload dialog).
-- **Config**: `<userData>/config.json` = `{ version, lang, roots }`; `CONFIG_VERSION` + `loadConfig()` handle migrations, including the former `Skills Manager` userData folder. Per-viewer UI state (tab, scope filter, collapsed groups, sidebar width, last file) lives in `localStorage`.
+- **Config**: `<userData>/config.json` = `{ version, lang, roots, ai }`; `CONFIG_VERSION` + `loadConfig()` handle migrations, including the former `Skills Manager` userData folder. Bumping `CONFIG_VERSION` adds the default folders back, so optional fields like `ai` are normalized instead. Per-viewer UI state (tab, scope filter, collapsed groups, sidebar width, last file) lives in `localStorage`.
 - **i18n**: `t(key, params)` in the renderer, `tr(key, params)` in main; `data-i18n`, `data-i18n-title`, `data-i18n-placeholder` in HTML; `applyLang()` re-renders and `buildMenu()` rebuilds menus on language change. See the `add-ui-text` skill.
+- **AI chat**: `ai-panel.js` sends the editor text and the conversation through `ai:send`, and `ai-core.js` calls Anthropic's Messages API or the OpenAI format (OpenAI, Ollama, LM Studio) without streaming. Proposals come back as the complete file in a `<proposed_file>` block; `shared/proposal.js` extracts it and computes the diff. Apply goes through `mde.value()`, not `setEditorValue()`, to keep the undo history. Conversations stay in memory, one per file.
 - **Releases**: a push to `main` runs `build.yml`: dmg (arm64 + x64) on `macos-latest`, NSIS (x64 + arm64) on `windows-latest`, then the *Release* job publishes `v<version>`. A version with a suffix (`1.2.0-beta.1`) becomes a GitHub pre-release. Manual runs only build.
 - **Updates**: the packaged app reads `releases/latest` 3 s after launch and from *Check for Updates…*. It downloads the asset for the platform, verifies the GitHub SHA-256 digest, then on quit: macOS swaps the bundle copied from the dmg (`hdiutil` + `ditto`), Windows runs the installer with `/S --updated --force-run`. Squirrel/electron-updater is not used because the builds are only ad-hoc signed.
 
@@ -76,7 +82,7 @@ The renderer loads scripts with `<script>` tags (UMD globals: `window.api`, `Fro
 
 ## Testing
 
-- `npm test` covers semver, the updater core (asset choice, API mapping, download with digest, bundle swap) and i18n (key parity, placeholders, every used key exists). Add tests for new Electron-free logic.
+- `npm test` covers semver, the updater core (asset choice, API mapping, download with digest, bundle swap), the AI core (requests, errors, URL validation), proposals (extraction, diff) and i18n (key parity, placeholders, every used key exists). Add tests for new Electron-free logic.
 - UI changes: no automated UI test in CI. Use the `ui-screenshot` skill to check the window in light and dark mode, and refresh `docs/screenshot*.png` when the main screen changes.
 - Updater changes: use the `test-update-flow` skill (mock release feed). Real installs can only be tested with packaged builds on macOS and Windows.
 
