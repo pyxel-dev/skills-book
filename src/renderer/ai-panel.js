@@ -67,6 +67,7 @@ window.AiPanel = (() => {
       }
 
       const card = el('div', 'ai-card');
+      if (!msg.outcome && Proposal.removesMost(ops)) card.append(el('div', 'ai-warning', t('ai.shrinks')));
       card.append(diff, foot);
       return card;
     }

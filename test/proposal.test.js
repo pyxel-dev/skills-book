@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { extract, matchEnding, diffLines, compact } = require('../src/shared/proposal');
+const { extract, matchEnding, diffLines, compact, removesMost } = require('../src/shared/proposal');
 
 const summary = (ops) => ops.map((op) => `${op.type}:${op.text}`);
 
@@ -76,4 +76,13 @@ test('compact keeps context around changes and marks the gaps', () => {
   const before = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'].join('\n');
   const after = before.replace('5', 'five');
   assert.deepEqual(compact(diffLines(before, after)).map((op) => op.text), ['…', '3', '4', '5', 'five', '6', '7', '…']);
+});
+
+test('removesMost flags a shortened file, not a rewrite or a small edit', () => {
+  const lines = (prefix, count) => Array.from({ length: count }, (_, i) => `${prefix}${i}`).join('\n');
+  const file = lines('line', 10);
+  assert.equal(removesMost(diffLines(file, lines('line', 2))), true);
+  assert.equal(removesMost(diffLines(file, lines('line', 5))), false);
+  assert.equal(removesMost(diffLines(file, file.replace('line5', 'changed'))), false);
+  assert.equal(removesMost(diffLines(file, lines('new', 10))), false);
 });

@@ -116,6 +116,7 @@ Proposal card:
 - If the editor text differs from the text sent with the request, Apply refuses and shows a message.
 - A reply cut off before the closing tag offers no Apply and shows a message.
 - A proposal identical to the document shows "No changes proposed".
+- A proposal that loses more than half the file's lines, net of additions, shows a warning. Apply stays available, because shortening may be what the user asked for. A rewrite of similar length shows no warning.
 
 Replies are displayed with `textContent` and `white-space: pre-wrap`. A `SKILL.md` from a plugin may contain instructions aimed at the model, and the CSP allows `img-src https:`, so a rendered Markdown image could send file content to an external server. The model has no tools and can only propose text, which the user reviews in the diff.
 
@@ -138,7 +139,7 @@ Conversations live in a `Map` keyed by document id and are lost on quit. Each ha
 - It closes with Escape, its close button, or a click in the file list.
 - The `#lang` select moves here with the same id, so `applyLang()` keeps working.
 
-Content: language; Anthropic and OpenAI keys; local URL and optional key; a hint about Ollama and LM Studio; a note that the open file and the conversation are sent to the selected provider. Key fields are write-only: after saving, the field empties and its placeholder shows "Key saved", with a Delete button.
+Content: language; Anthropic and OpenAI keys; local URL and optional key; a hint about Ollama and LM Studio; on macOS, a hint about Apple's on-device model through `fm serve`, marked as experimental, which the user starts themselves because the `fm` terms restrict programmatic access to what is expressly permitted; a note that the open file and the conversation are sent to the selected provider. Key fields are write-only: after saving, the field empties and its placeholder shows "Key saved", with a Delete button.
 
 ## Errors
 

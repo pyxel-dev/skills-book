@@ -374,6 +374,7 @@ button { font: inherit; color: inherit; }
 .ai-note { flex: none; color: var(--muted); font-size: 12px; }
 .ai-setup { flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; color: var(--muted); }
 .ai-card { flex: none; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.ai-warning { padding: 8px; border-bottom: 1px solid var(--border); color: var(--danger); font-size: 12px; }
 .ai-diff { max-height: 320px; overflow: auto; padding: 6px 0; font: 12px/1.5 var(--mono); user-select: text; }
 .ai-line { padding: 0 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .ai-equal { color: var(--muted); }
@@ -418,6 +419,8 @@ button { font: inherit; color: inherit; }
 .settings-body { flex: 1; min-height: 0; max-width: 640px; overflow: auto; padding: 8px 24px 24px; }
 .settings-body h2 { margin: 24px 0 4px; font-size: 13px; font-weight: 600; }
 .settings-note { margin: 4px 0 8px; color: var(--muted); font-size: 12px; user-select: text; }
+.settings-note-mac { display: none; }
+.platform-darwin .settings-note-mac { display: block; }
 .settings-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
 .settings-row > span { flex: none; width: 96px; }
 .settings-row input,

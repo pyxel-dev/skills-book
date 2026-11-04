@@ -97,5 +97,11 @@
     return out;
   }
 
-  return { extract, matchEnding, diffLines, compact };
+  /** Net loss of more than half the lines: small models sometimes return a shortened copy of the file. */
+  function removesMost(ops) {
+    const count = (type) => ops.filter((op) => op.type === type).length;
+    return (count('remove') - count('add')) * 2 > count('remove') + count('equal');
+  }
+
+  return { extract, matchEnding, diffLines, compact, removesMost };
 });
